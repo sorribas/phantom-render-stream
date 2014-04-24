@@ -105,11 +105,3 @@ module.exports = function(opts) {
 	
 	return render;
 };
-
-var render = module.exports();
-for (var i = 0; i < 10; i++) {
-	render('http://google.com').pipe(require('fs').createWriteStream('/home/eduardo/Desktop/lalala'+i+'.png'));;
-	render('http://sorribas.org').pipe(require('fs').createWriteStream('/home/eduardo/Desktop/lalalalala'+i+'.png'));;
-}
-
-//render.destroy();
