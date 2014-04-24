@@ -1,0 +1,14 @@
+{
+  "name": "phantom-render-stream",
+  "version": "0.0.0",
+  "description": "Render a webpage and get the image as a stream",
+  "repository": "e-conomic/phantom-render-stream",
+  "dependencies": {
+    "thunky": "^0.1.0",
+    "freeport": "^1.0.2",
+    "once": "^1.3.0",
+    "after-all": "^0.1.1",
+    "base64-stream": "^0.1.2",
+    "request": "^2.34.0"
+  }
+}
