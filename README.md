@@ -4,6 +4,8 @@ Render a webpage and get the image as a stream.
 
 	npm install phantom-render-stream
 
+[![Build Status](https://travis-ci.org/e-conomic/phantom-render-stream.png)](https://travis-ci.org/e-conomic/phantom-render-stream)
+
 It uses a pool of phantom processes that runs a small webserver so it doesn't need
 to spawn a new process for each website.
 
