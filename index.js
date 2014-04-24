@@ -3,7 +3,6 @@ var freeport = require('freeport');
 var child_process = require('child_process');
 var thunky = require('thunky');
 var request = require('request');
-var stream = require('stream');
 var base64 = require('base64-stream');
 var afterAll = require('after-all');
 
@@ -11,6 +10,8 @@ module.exports = function(opts) {
 	opts = opts || {};
 	opts.pool = opts.pool || 1;
 	opts.wait = opts.wait || false;
+
+	var format = opts.format || 'png';
 
 	var destroyed = false;
 	var phantom = function() {
@@ -59,8 +60,10 @@ module.exports = function(opts) {
 		});
 	};
 
-	var render = function(url, format) {
-		format = format || 'png';
+	var render = function(url, renderOpts) {
+		renderOpts = renderOpts || {};
+		renderOpts.format = renderOpts.format || format;
+
 		var decoder = base64.decode();
 		var req;
 		var destroyed = false;
@@ -76,7 +79,7 @@ module.exports = function(opts) {
 			if (destroyed) return free();
 			free = once(free);
 
-			req = request(host + '/' + format + '?url=' + encodeURIComponent(url));
+			req = request(host + '/' + renderOpts.format + '?url=' + encodeURIComponent(url));
 			req.pipe(decoder);
 			req.on('error', function(err) {
 				decoder.emit('error', err);
