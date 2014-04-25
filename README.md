@@ -11,6 +11,8 @@ to spawn a new process for each website.
 
 ## Usage
 
+First of all, you need to have phantomjs installed on the machine you use the module.
+
 ``` js
 var phantom = require('phantom-render-stream');
 var fs = require('fs');
