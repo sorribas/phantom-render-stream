@@ -79,7 +79,7 @@ module.exports = function(opts) {
 			if (destroyed) return free();
 			free = once(free);
 
-			req = request(host + '/' + renderOpts.format + '?url=' + encodeURIComponent(url));
+			req = request(host + '/' + renderOpts.format.toLowerCase() + '?url=' + encodeURIComponent(url));
 			req.pipe(decoder);
 			req.on('error', function(err) {
 				decoder.emit('error', err);
