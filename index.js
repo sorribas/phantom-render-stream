@@ -92,7 +92,7 @@ module.exports = function(opts) {
 	};
 
 	render.destroy = function(cb) {
-		var next = afterAll(cb || function() {});
+		var next = afterAll(cb);
 		destroyed = true;
 		pool.forEach(function(ph) {
 			var cb = next();
