@@ -3,13 +3,11 @@ var server = require('webserver').create();
 var system = require('system');
 var host, port;
 
-// hackish but works
-var getUrl = function(url) {
-	var parser = document.createElement('a');
-	parser.href = 'http://example.com' + url;
-
-	if (parser.search.indexOf('?url=') !== 0) return false;
-	return decodeURIComponent(parser.search.substr(5));
+var parseQuery = function(url) {
+	return (url.match(/(\?|&)([^=]+)=([^&]+)/g) || []).reduce(function(query, str) {
+		query[str.match(/.(.+)=/)[1]] = decodeURIComponent(str.match(/=(.+)/)[1]);
+		return query;
+	}, {});
 };
 
 var error = function(response) {
@@ -25,19 +23,19 @@ if (system.args.length !== 2) {
 	var listening = server.listen(port, function (request, response) {
 		var format = false;
 		if (request.url.indexOf('/png') === 0) format = 'PNG';
-		if (request.url.indexOf('/jpeg') === 0) format = 'JPEG';
+		if (request.url.indexOf('/jpeg') === 0 || request.url.indexOf('/jpg') === 0) format = 'JPEG';
 		if (request.url.indexOf('/pdf') === 0) format = 'PDF';
 		if (!format) return error(response);
 
-		var url = getUrl(request.url);
-
+		var qs = parseQuery(request.url);
 		var page = webpage.create();
+
 		page.viewportSize = {width: 1280, height: 960};
 
-		page.open(url, function(st) {
+		page.open(qs.url, function(st) {
 			if (st !== 'success') return response.close();
 			response.statusCode = 200;
-			response.headers = {"Cache": "no-cache", "Content-Type": "text/html"};
+			response.headers = {'Cache': 'no-cache', 'Content-Type': 'text/html'};
 
 			var b64 = page.renderBase64(format);
 			if (b64) {
