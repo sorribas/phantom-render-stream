@@ -39,13 +39,13 @@ if (system.args.length !== 2) {
 			response.statusCode = 200;
 			response.headers = {"Cache": "no-cache", "Content-Type": "text/html"};
 
-			var b64 = page.renderBase64('PNG');
+			var b64 = page.renderBase64(format);
 			if (b64) {
 				response.write(b64);
 				return response.close();
 			}
 			setTimeout(function() {
-				b64 = page.renderBase64('PNG');
+				b64 = page.renderBase64(format);
 				response.write(b64);
 				response.close();
 			}, 0);
