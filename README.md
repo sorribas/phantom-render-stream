@@ -38,7 +38,7 @@ Since the interface is just a stream you can pipe the web site anywhere!
 Try installing [picture-tube](https://github.com/substack/picture-tube) and run the following example
 
 ``` js
-var phantom = require('./');
+var phantom = require('phantom-render-stream');
 var pictureTube = require('picture-tube');
 var render = phantom();
 
