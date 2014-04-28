@@ -31,7 +31,7 @@ var spawn = function() {
 
 	var ensure = function() {
 		if (child) return child;
-		child = cp.spawn('phantomjs', ['phantom-process.js', filename]);
+		child = cp.spawn('phantomjs', [path.join(__dirname, 'phantom-process.js'), filename]);
 
 		child.stdin.unref();
 		child.stdout.unref();
