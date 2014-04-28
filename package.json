@@ -1,6 +1,6 @@
 {
   "name": "phantom-render-stream",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Render a webpage and get the image as a stream",
   "repository": "e-conomic/phantom-render-stream",
   "dependencies": {
@@ -13,7 +13,7 @@
     "concat-stream": "^1.4.5"
   },
   "optionalDependencies": {
-	  "phantomjs": "1.9.x"
+    "phantomjs": "1.9.x"
   },
   "scripts": {
     "test": "tape test/*.js"
