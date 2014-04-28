@@ -81,12 +81,32 @@ var loop = function() {
 			loop();
 			return;
 		}
- 
-		setTimeout(function() {
-			if (line.printMedia) forcePrintMedia();
-			page.render(filename, {format:line.format || 'png'});
+
+		var render = function() {
+			setTimeout(function() {
+				if (line.printMedia) forcePrintMedia();
+				page.render(filename, {format:line.format || 'png'});
+				loop();
+			}, 0);
+		};
+
+		var waitAndRender = function() {
+			var loop = function() {
+				var status = page.evaluate(function() {
+					return window.status;
+				});
+				if (status === 'ready') return render();
+				setTimeout(loop, 250);
+			};
 			loop();
-		}, 0);
+		};
+
+		var status = page.evaluate(function() {
+			return window.status;
+		});
+		if (status === 'loading') return waitAndRender();
+		render();
+
 	});
 };
  
