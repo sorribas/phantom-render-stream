@@ -70,3 +70,12 @@ test('non existing page', function(host, t) {
 		t.end();
 	});
 });
+
+test('simple render', function(host, t) {
+	var render = phantom();
+	render(host).pipe(concat(function(data) {
+		t.ok(data);
+		t.ok(data.length > 0);
+		t.end();
+	}));
+});
