@@ -12,6 +12,9 @@
     "tape": "^2.12.3",
     "concat-stream": "^1.4.5"
   },
+  "optionalDependencies": {
+	  "phantomjs": "1.9.x"
+  },
   "scripts": {
     "test": "tape test/*.js"
   }
