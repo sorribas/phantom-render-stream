@@ -71,8 +71,8 @@ test('non existing page', function(host, t) {
 	});
 });
 
-test('simple render', function(host, t) {
-	var render = phantom();
+test('print media', function(host, t) {
+	var render = phantom({printMedia: true});
 	render(host).pipe(concat(function(data) {
 		t.ok(data);
 		t.ok(data.length > 0);
