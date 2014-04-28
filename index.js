@@ -48,15 +48,28 @@ var spawn = function() {
 		cp.spawn('mkfifo', [filename]).on('exit', cb).on('error', cb);
 	});
 
+	var free = function() {
+		ret.using--;
+	};
+
 	var ret = function(opts, cb) {
+		ret.using++;
+
+		var done = function(err, stream) {
+			if (stream) stream.on('end', free);
+			else free();
+			cb(err, stream);
+		};
+
 		fifo(function(err) {
-			if (err) return cb(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
-			queue.push(cb)
+			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
+			queue.push(done)
 			ensure().stdin.write(JSON.stringify(opts)+'\n');
 			if (queue.length === 1) loop();
 		});
 	};
-	ret.queue = queue;
+
+	ret.using = 0;
 	ret.destroy = function(cb) {
 		if (child) child.kill();
 		fs.unlink(filename, function() {
@@ -75,7 +88,7 @@ module.exports = function(opts) {
 	
 	var select = function() {
 		return pool.reduce(function(a, b) {
-			return a.queue.length <= b.queue.length ? a : b;
+			return a.using <= b.using ? a : b;
 		});
 	};
 
