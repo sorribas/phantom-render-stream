@@ -62,3 +62,11 @@ test('pool render parallel', function(host, t) {
 		t.ok(data.length > 0);
 	}));
 });
+
+test('non existing page', function(host, t) {
+	var render = phantom();
+	render('http://localhost:12398').on('error', function(err) {
+		t.ok(err);
+		t.end();
+	});
+});

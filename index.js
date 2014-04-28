@@ -1,110 +1,112 @@
-var once = require('once');
-var freeport = require('freeport');
-var child_process = require('child_process');
+var fs = require('fs');
+var cp = require('child_process');
+var stream = require('stream');
 var thunky = require('thunky');
-var request = require('request');
-var base64 = require('base64-stream');
+var os = require('os');
+var path = require('path');
 var afterAll = require('after-all');
+var xtend = require('xtend');
+
+var spawn = function() {
+	var child;
+	var queue = [];
+
+	var filename = path.join(os.tmpDir() ,'phantom-queue-' + process.pid + '-' + Math.random().toString(36).slice(2));
+
+	var loop = function() {
+		var result = fs.createReadStream(filename);
+
+		result.once('readable', function() {
+			var first = result.read(2) || result.read(1);
+			if (first && first.toString() === '!') return queue.shift()(new Error('Render failed'));
+			
+			result.unshift(first);
+			queue.shift()(null, result);
+		});
+
+		result.on('close', function() {
+			if (queue.length) loop();
+		});
+	};
+
+	var ensure = function() {
+		if (child) return child;
+		child = cp.spawn('phantomjs', ['phantom-process.js', filename]);
+
+		child.stdin.unref();
+		child.stdout.unref();
+		child.stderr.unref();
+		child.unref();
+
+		child.on('exit', function() {
+			child = null;
+		});
+		return child;
+	};
+
+	var fifo = thunky(function(cb) {
+		cp.spawn('mkfifo', [filename]).on('exit', cb).on('error', cb);
+	});
+
+	var ret = function(opts, cb) {
+		fifo(function(err) {
+			if (err) return cb(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
+			queue.push(cb)
+			ensure().stdin.write(JSON.stringify(opts)+'\n');
+			if (queue.length === 1) loop();
+		});
+	};
+	ret.queue = queue;
+	ret.destroy = function(cb) {
+		if (child) child.kill();
+		fs.unlink(filename, function() {
+			if (cb) cb();
+		});
+	};
+
+	return ret;
+};
 
 module.exports = function(opts) {
 	opts = opts || {};
 	opts.pool = opts.pool || 1;
-	opts.wait = opts.wait || false;
 
-	var format = opts.format || 'png';
-
-	var destroyed = false;
-	var phantom = function() {
-		var open = function (cb) {
-			if (destroyed) return cb(new Error('destroyed'));
-			cb = once(cb);
-			freeport(function(err, port) {
-				if (err) return cb(err);
-				var ps = child_process.spawn('phantomjs', [__dirname + '/phantom-server.js', port]);
-				ps.on('error', cb);
-				ps.unref();
-				ps.stdout.once('data', function() {
-					ps.stdout.unref();
-					ps.stderr.unref();
-					ps.stdin.unref();
-					cb(null, 'http://localhost:' + port, ps);
-				});
-				ps.on('exit', function() {
-					thunk = thunky(open);
-				});
-			});
-		};
-
-		var thunk = thunky(open);
-		return function(cb) {
-			thunk(cb);
-		};
-	};
-
-	var pool = Array(opts.pool).join(',').split(',').map(phantom);
-	var free = [].concat(pool);
-
-	var queue = [];
-	var openPhantom = function(cb) {
-		if (!free.length) return queue.push(cb);
-		var ph = free.pop();
-		ph(function(err, host) {
-			if (err) {
-				free.push(ph);
-				return cb(err)
-			}
-			cb(null, host, function() {
-				free.push(ph);
-				if (queue.length) openPhantom(queue.shift());
-			});
+	var pool = Array(opts.pool).join(',').split(',').map(spawn);
+	
+	var select = function() {
+		return pool.reduce(function(a, b) {
+			return a.queue.length <= b.queue.length ? a : b;
 		});
 	};
 
-	var render = function(url, renderOpts) {
-		renderOpts = renderOpts || {};
-		renderOpts.format = renderOpts.format || format;
-
-		var decoder = base64.decode();
-		var req;
-		var destroyed = false;
-
-		decoder.destroy = function() {
-			if (req) req.destroy();
-			else destroyed = true;
-			decoder.emit('close');
-		};
-
-		openPhantom(function(err, host, free) {
-			if (err) return decoder.emit('error', err);;
-			if (destroyed) return free();
-			free = once(free);
-
-			req = request(host + '/' + renderOpts.format.toLowerCase() + '?url=' + encodeURIComponent(url));
-			req.pipe(decoder);
-			req.on('error', function(err) {
-				decoder.emit('error', err);
-				free();
-			});
-			decoder.on('finish', free);
+	var render = function(url, ropts) {
+		ropts = xtend(opts, ropts);
+		ropts.url = url;
+		var pt = stream.PassThrough();
+		select()(ropts, function(err, stream) {
+			if (err) return pt.emit('error', err);
+			stream.pipe(pt);
 		});
 
-		return decoder;
+		return pt;
 	};
 
 	render.destroy = function(cb) {
 		var next = afterAll(cb);
-		destroyed = true;
-		pool.forEach(function(ph) {
-			var cb = next();
-			ph(function(err, host, ps) {
-				if (err) return cb();
-				ps.kill();
-				ps.on('exit', function() {
-					cb();
-				});
-			});
+		pool.forEach(function(ps) {
+			ps.destroy(next());
 		});
 	};
-	
+
 	return render;
 };
+
+var render = module.exports()
+
+var strm = render('http://wikipedia.org', {format: 'pdf'});
+strm.pipe(fs.createWriteStream('out.pdf'))
+strm.on('finish', function() {
+	render.destroy();
+});
+//render('http://bellard.org').pipe(fs.createWriteStream('out2.png'))
+//render('http://wikipedia.org').pipe(fs.createWriteStream('out3.png'))
