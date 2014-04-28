@@ -100,13 +100,3 @@ module.exports = function(opts) {
 
 	return render;
 };
-
-var render = module.exports()
-
-var strm = render('http://wikipedia.org', {format: 'pdf'});
-strm.pipe(fs.createWriteStream('out.pdf'))
-strm.on('finish', function() {
-	render.destroy();
-});
-//render('http://bellard.org').pipe(fs.createWriteStream('out2.png'))
-//render('http://wikipedia.org').pipe(fs.createWriteStream('out3.png'))
