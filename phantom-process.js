@@ -77,14 +77,13 @@ var loop = function() {
 
 	page.open(line.url, function(st) {
 		if (st !== 'success') {
-			// TODO write error file
 			fs.write(filename, '!', 'w');
 			loop();
 			return;
 		}
  
 		setTimeout(function() {
-			if (line.forcePrintMedia) forcePrintMedia();
+			if (line.printMedia) forcePrintMedia();
 			page.render(filename, {format:line.format || 'png'});
 			loop();
 		}, 0);
