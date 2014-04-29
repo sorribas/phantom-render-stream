@@ -6,6 +6,7 @@ var os = require('os');
 var path = require('path');
 var afterAll = require('after-all');
 var xtend = require('xtend');
+var once = require('once');
 
 var spawn = function() {
 	var child;
@@ -104,7 +105,18 @@ module.exports = function(opts) {
 		var pt = stream.PassThrough();
 		select()(ropts, function(err, stream) {
 			if (err) return pt.emit('error', err);
+			if (destroyed) return stream.destroy();
 			stream.pipe(pt);
+			pt.destroy = once(function() {
+				stream.destroy();
+				pt.emit('close');
+			});
+		});
+
+		var destroyed = false;
+		pt.destroy = once(function() {
+			destroyed = true;
+			pt.emit('close');
 		});
 
 		return pt;
