@@ -73,7 +73,7 @@ var loop = function() {
 		orientation: line.orientation || 'portrait',
 		margin: line.margin || '0cm'
 	};
-	page.clipRect = page.viewportSize;
+	if (line.crop) page.clipRect = page.viewportSize;
 
 	page.open(line.url, function(st) {
 		if (st !== 'success') {
