@@ -29,7 +29,8 @@ var spawn = function() {
 		});
 	};
 
-	var ensure = function() {
+	var ensure = function(opts) {
+		opts = opts || {};
 		if (child) return child;
 		child = cp.spawn('phantomjs', [path.join(__dirname, 'phantom-process.js'), filename]);
 
@@ -37,6 +38,11 @@ var spawn = function() {
 		child.stdout.unref();
 		child.stderr.unref();
 		child.unref();
+
+		if (opts.debug) {
+			child.stderr.pipe(process.stdout);
+			child.stdout.pipe(process.stdout);
+		}
 
 		child.on('exit', function() {
 			child = null;
@@ -64,7 +70,7 @@ var spawn = function() {
 		fifo(function(err) {
 			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
 			queue.push(done)
-			ensure().stdin.write(JSON.stringify(opts)+'\n');
+			ensure(opts).stdin.write(JSON.stringify(opts)+'\n');
 			if (queue.length === 1) loop();
 		});
 	};
