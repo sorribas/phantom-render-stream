@@ -49,6 +49,38 @@ render('http://google.com')
 	.pipe(process.stdout);
 ```
 
+## Deferred render
+
+If you need your page to do something before phantom renders it you just need to immediately set
+`window.renderable` to false. If that is set when the page is opened the module will wait for 
+`window.renderable` to be set to true and when this happens the render will occur.
+
+Here is an example to illustrate it better.
+
+```html
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	...
+	<script type="text/javascript">window.renderable = false</script>
+	<meta charset="UTF-8">
+	<title></title>
+</head>
+<body>
+	
+</body>
+...
+<script type="text/javascript">
+  doSomeAjaxLoading(function() {
+    doSomeRendering();
+	window.renderable = true;
+  })
+</script>
+</html>
+
+```
+
 ## License
 
 MIT
