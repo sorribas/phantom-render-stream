@@ -38,8 +38,6 @@ var spawn = function() {
 		child.stderr.unref();
 		child.unref();
 
-		child.stdout.pipe(process.stdout); /////////// TODO REMOVE
-
 		child.on('exit', function() {
 			child = null;
 		});
