@@ -91,20 +91,28 @@ var loop = function() {
 		};
 
 		var waitAndRender = function() {
-			var loop = function() {
-				var status = page.evaluate(function() {
-					return window.status;
+			page.evaluate(function() {
+				var renderable = false;
+				Object.defineProperty(window, 'renderable', {
+					get: function() {
+						return renderable;
+					},
+					set: function(val) {
+						renderable = val;
+						alert('webpage-renderable');
+					}
 				});
-				if (status === 'ready') return render();
-				setTimeout(loop, 250);
+			});
+
+			page.onAlert = function(msg) {
+				if (msg === 'webpage-renderable') render();
 			};
-			loop();
 		};
 
-		var status = page.evaluate(function() {
-			return window.status;
+		var renderable = page.evaluate(function() {
+			return window.renderable;
 		});
-		if (status === 'loading') return waitAndRender();
+		if (renderable === false) return waitAndRender();
 		render();
 
 	});
