@@ -63,8 +63,10 @@ var forcePrintMedia = function() {
 var loop = function() {
 	var line = JSON.parse(system.stdin.readLine());
 
+	if (!page) page = webpage.create();
+
 	page.viewportSize = {
-		width:line.width || 1280,
+		width: line.width || 1280,
 		height: line.height || 960
 	};
 
@@ -73,11 +75,13 @@ var loop = function() {
 		orientation: line.orientation || 'portrait',
 		margin: line.margin || '0cm'
 	};
+
 	if (line.crop) page.clipRect = page.viewportSize;
 
 	page.open(line.url, function(st) {
 		if (st !== 'success') {
 			fs.write(filename, '!', 'w');
+			page = null;
 			loop();
 			return;
 		}
@@ -119,5 +123,3 @@ var loop = function() {
 };
  
 loop();
-
-
