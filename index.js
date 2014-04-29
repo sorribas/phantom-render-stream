@@ -14,7 +14,11 @@ var spawn = function() {
 
 	var filename = path.join(os.tmpDir() ,'phantom-queue-' + process.pid + '-' + Math.random().toString(36).slice(2));
 
+	var looping = false;
 	var loop = function() {
+		if (looping) return;
+		looping = true;
+
 		var result = fs.createReadStream(filename);
 
 		result.once('readable', function() {
@@ -26,6 +30,7 @@ var spawn = function() {
 		});
 
 		result.on('close', function() {
+			looping = false;
 			if (queue.length) loop();
 		});
 	};
@@ -70,7 +75,7 @@ var spawn = function() {
 
 		fifo(function(err) {
 			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
-			queue.push(done)
+			queue.push(done);
 			ensure(opts).stdin.write(JSON.stringify(opts)+'\n');
 			if (queue.length === 1) loop();
 		});
