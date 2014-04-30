@@ -1,6 +1,7 @@
 var concat = require('concat-stream');
 var test = require('./helpers/test');
 var phantom = require('../');
+var fs = require('fs');
 
 test('simple render', function(host, t) {
 	var render = phantom();
@@ -77,5 +78,19 @@ test('print media', function(host, t) {
 		t.ok(data);
 		t.ok(data.length > 0);
 		t.end();
+	}));
+});
+
+test('fifo directory option', function(host, t) {
+	var render = phantom({fifoDir: process.cwd()});
+	render(host).pipe(concat(function(data) {
+		var reg = /phantom-queue\-.+/;
+
+		t.ok(data);
+		t.ok(data.length > 0);
+		t.ok(fs.readdirSync(process.cwd()).some(reg.test.bind(reg)));
+		render.destroy(function() {
+			t.end();
+		});
 	}));
 });

@@ -8,11 +8,14 @@ var afterAll = require('after-all');
 var xtend = require('xtend');
 var once = require('once');
 
-var spawn = function() {
+var spawn = function(opts) {
+	opts = opts || {};
 	var child;
 	var queue = [];
 
-	var filename = path.join(os.tmpDir() ,'phantom-queue-' + process.pid + '-' + Math.random().toString(36).slice(2));
+	var filename = 'phantom-queue-' + process.pid + '-' + Math.random().toString(36).slice(2);
+	if (opts.fifoDir) filename = path.join(opts.fifoDir, filename);
+	else filename = path.join(os.tmpDir(), filename);
 
 	var looping = false;
 	var loop = function() {
@@ -35,8 +38,7 @@ var spawn = function() {
 		});
 	};
 
-	var ensure = function(opts) {
-		opts = opts || {};
+	var ensure = function() {
 		if (child) return child;
 		child = cp.spawn('phantomjs', [path.join(__dirname, 'phantom-process.js'), filename]);
 
@@ -64,7 +66,7 @@ var spawn = function() {
 		ret.using--;
 	};
 
-	var ret = function(opts, cb) {
+	var ret = function(ropts, cb) {
 		ret.using++;
 
 		var done = function(err, stream) {
@@ -76,7 +78,7 @@ var spawn = function() {
 		fifo(function(err) {
 			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
 			queue.push(done);
-			ensure(opts).stdin.write(JSON.stringify(opts)+'\n');
+			ensure().stdin.write(JSON.stringify(ropts)+'\n');
 			if (queue.length === 1) loop();
 		});
 	};
@@ -96,7 +98,7 @@ module.exports = function(opts) {
 	opts = opts || {};
 	opts.pool = opts.pool || 1;
 
-	var pool = Array(opts.pool).join(',').split(',').map(spawn);
+	var pool = Array(opts.pool).join(',').split(',').map(spawn.bind(null, opts));
 	
 	var select = function() {
 		return pool.reduce(function(a, b) {
