@@ -7,6 +7,7 @@ var path = require('path');
 var afterAll = require('after-all');
 var xtend = require('xtend');
 var once = require('once');
+var phantomjsPath = require('phantomjs').path;
 
 var spawn = function(opts) {
 	opts = opts || {};
@@ -40,7 +41,7 @@ var spawn = function(opts) {
 
 	var ensure = function() {
 		if (child) return child;
-		child = cp.spawn('phantomjs', [path.join(__dirname, 'phantom-process.js'), filename]);
+		child = cp.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js'), filename]);
 
 		child.stdin.unref();
 		child.stdout.unref();

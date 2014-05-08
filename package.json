@@ -7,14 +7,12 @@
     "thunky": "^0.1.0",
     "after-all": "~1.0.0",
     "xtend": "~3.0.0",
-    "once": "~1.3.0"
+    "once": "~1.3.0",
+    "phantomjs": "1.9.x"
   },
   "devDependencies": {
     "tape": "^2.12.3",
     "concat-stream": "^1.4.5"
-  },
-  "optionalDependencies": {
-    "phantomjs": "1.9.x"
   },
   "scripts": {
     "test": "tape test/*.js"
