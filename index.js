@@ -27,7 +27,7 @@ var spawn = function(opts) {
 		result.once('readable', function() {
 			var first = result.read(2) || result.read(1);
 			if (first && first.toString() === '!') return queue.shift()(new Error('Render failed'));
-			
+
 			result.unshift(first);
 			queue.shift()(null, result);
 		});
@@ -97,9 +97,11 @@ var spawn = function(opts) {
 module.exports = function(opts) {
 	opts = opts || {};
 	opts.pool = opts.pool || 1;
+	opts.width = opts.width || 1024;
+  opts.height = opts.height || 768;
 
 	var pool = Array(opts.pool).join(',').split(',').map(spawn.bind(null, opts));
-	
+
 	var select = function() {
 		return pool.reduce(function(a, b) {
 			return a.using <= b.using ? a : b;
