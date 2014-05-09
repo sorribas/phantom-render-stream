@@ -26,8 +26,8 @@ You can also pass some options
 var render = phantom({
 	pool: 5, // change the pool size. defaults to 1,
 	format: 'jpeg', // the default output format
-	width: 1280, // changes the width size. default to 1024
-	height: 800 // changes the height size. default to 768
+	width: 1280, // changes the width size. default to 1280
+	height: 800 // changes the height size. default to 960
 });
 ```
 
