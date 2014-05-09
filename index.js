@@ -97,8 +97,6 @@ var spawn = function(opts) {
 module.exports = function(opts) {
 	opts = opts || {};
 	opts.pool = opts.pool || 1;
-	opts.width = opts.width || 1024;
-  opts.height = opts.height || 768;
 
 	var pool = Array(opts.pool).join(',').split(',').map(spawn.bind(null, opts));
 
