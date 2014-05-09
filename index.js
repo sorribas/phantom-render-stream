@@ -51,6 +51,9 @@ var spawn = function(opts) {
 		if (opts.debug) {
 			child.stderr.pipe(process.stdout);
 			child.stdout.pipe(process.stdout);
+		} else {
+			child.stderr.resume();
+			child.stdout.resume();
 		}
 
 		child.on('exit', function() {
