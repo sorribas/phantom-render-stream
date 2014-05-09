@@ -90,6 +90,7 @@ var loop = function() {
 			setTimeout(function() {
 				if (line.printMedia) forcePrintMedia();
 				page.render(filename, {format:line.format || 'png'});
+				page = null;
 				loop();
 			}, 0);
 		};
@@ -101,14 +102,14 @@ var loop = function() {
 
 			var rendered = false;
 			page.onAlert = function(msg) {
-				if (rendered || msg !== 'webpage-renderable')return; 
+				if (rendered || msg !== 'webpage-renderable') return; 
 				rendered = true;
 				clearTimeout(timeout);
 				render();
 			};
 
 			page.evaluate(function() {
-				if (window.rendered) return alert('webpage-renderable');
+				if (window.renderable) return alert('webpage-renderable');
 				var renderable = false;
 				Object.defineProperty(window, 'renderable', {
 					get: function() {
