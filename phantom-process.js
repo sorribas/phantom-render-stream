@@ -108,8 +108,16 @@ var loop = function() {
 				});
 			});
 
+			var timeout = setTimeout(function() {
+				page.onAlert('webpage-renderable');
+			}, 10000);
+
+			var rendered = false;
 			page.onAlert = function(msg) {
-				if (msg === 'webpage-renderable') render();
+				if (rendered || msg !== 'webpage-renderable')return; 
+				rendered = true;
+				clearTimeout(timeout);
+				render();
 			};
 		};
 
