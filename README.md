@@ -24,16 +24,21 @@ You can also pass some options
 
 ``` js
 var render = phantom({
-	pool: 5 // change the pool size. defaults to 1,
-	format: 'jpeg' // the default output format
+	pool: 5, // change the pool size. defaults to 1,
+	format: 'jpeg', // the default output format
+	width: 1280, // changes the width size. default to 1024
+	height: 800 // changes the height size. default to 768
 });
 ```
 
 Or override the options for each render stream
 
 ``` js
-render(myUrl, {format:'jpeg'}).pipe(...)
+render(myUrl, {format:'jpeg', width: 1280, height: 960}).pipe(...)
 ```
+
+
+
 
 Since the interface is just a stream you can pipe the web site anywhere!
 Try installing [picture-tube](https://github.com/substack/picture-tube) and run the following example
