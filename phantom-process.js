@@ -95,19 +95,6 @@ var loop = function() {
 		};
 
 		var waitAndRender = function() {
-			page.evaluate(function() {
-				var renderable = false;
-				Object.defineProperty(window, 'renderable', {
-					get: function() {
-						return renderable;
-					},
-					set: function(val) {
-						renderable = val;
-						alert('webpage-renderable');
-					}
-				});
-			});
-
 			var timeout = setTimeout(function() {
 				page.onAlert('webpage-renderable');
 			}, 10000);
@@ -119,6 +106,20 @@ var loop = function() {
 				clearTimeout(timeout);
 				render();
 			};
+
+			page.evaluate(function() {
+				if (window.rendered) return alert('webpage-renderable');
+				var renderable = false;
+				Object.defineProperty(window, 'renderable', {
+					get: function() {
+						return renderable;
+					},
+					set: function(val) {
+						renderable = val;
+						alert('webpage-renderable');
+					}
+				});
+			});
 		};
 
 		var renderable = page.evaluate(function() {
