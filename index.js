@@ -27,10 +27,10 @@ var spawn = function(opts) {
 
 		result.once('readable', function() {
 			var first = result.read(2) || result.read(1);
-			if (first && first.toString() === '!') return queue.shift()(new Error('Render failed'));
+			if (first && first.toString() === '!') return queue.shift().callback(new Error('Render failed'));
 
 			result.unshift(first);
-			queue.shift()(null, result);
+			queue.shift().callback(null, result);
 		});
 
 		result.on('close', function() {
@@ -58,6 +58,10 @@ var spawn = function(opts) {
 
 		child.on('exit', function() {
 			child = null;
+			if (!queue.length) return;
+			queue.forEach(function(el) {
+				ensure().stdin.write(el.message);
+			});
 		});
 		return child;
 	};
@@ -68,6 +72,11 @@ var spawn = function(opts) {
 
 	var free = function() {
 		ret.using--;
+	};
+
+	var restart = function() {
+		if (child) child.kill();
+		child = null;
 	};
 
 	var ret = function(ropts, cb) {
@@ -81,8 +90,9 @@ var spawn = function(opts) {
 
 		fifo(function(err) {
 			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
-			queue.push(done);
-			ensure().stdin.write(JSON.stringify(ropts)+'\n');
+			var msg = JSON.stringify(ropts)+'\n';
+			queue.push({callback: done, message: msg, date: Date.now()});
+			ensure().stdin.write(msg);
 			if (queue.length === 1) loop();
 		});
 	};
@@ -93,7 +103,16 @@ var spawn = function(opts) {
 		fs.unlink(filename, function() {
 			if (cb) cb();
 		});
+		clearInterval(interval);
 	};
+
+	var interval = setInterval(function() {
+		if (!opts.timeout) return;
+		if (!queue.length) return;
+		if (Date.now() - queue[0].date < opts.timeout) return;
+		if (child) child.kill();
+	}, 5000);
+	interval.unref();
 
 	return ret;
 };
