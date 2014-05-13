@@ -64,7 +64,10 @@ var forcePrintMedia = function() {
 var checkFather = function() {
 	var father = webpage.create();
 	father.open('http://localhost:' + fatherPort, function(status) {
-		if (status !== 'success') return phantom.exit(0);
+		if (status !== 'success') {
+			fs.remove(filename);
+			return phantom.exit(0);
+		}
 	});
 };
 setInterval(checkFather, 2000);
