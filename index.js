@@ -110,16 +110,19 @@ var spawn = function(opts) {
 		fs.unlink(filename, function() {
 			if (cb) cb();
 		});
-		clearInterval(interval);
+		clearTimeout(timeout);
 	};
 
-	var interval = setInterval(function() {
+	var timeoutFn = function() {
+		timeout = setTimeout(timeoutFn, 5000);
+		timeout.unref();
 		if (!opts.timeout) return;
 		if (!queue.length) return;
 		if (Date.now() - queue[0].date < opts.timeout) return;
 		if (child) child.kill();
-	}, 5000);
-	interval.unref();
+	};
+	var timeout = setTimeout(timeoutFn, 5000);
+	timeout.unref();
 
 	return ret;
 };
