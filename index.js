@@ -36,6 +36,8 @@ var spawn = function(opts) {
 			cb(null, result);
 		});
 
+		result.on('error', cb);
+
 		result.on('close', function() {
 			cb(new Error('Render failed (no data)'));
 
