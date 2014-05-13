@@ -7,6 +7,7 @@ var path = require('path');
 var afterAll = require('after-all');
 var xtend = require('xtend');
 var once = require('once');
+var http = require('http');
 var phantomjsPath = require('phantomjs').path;
 
 var spawn = function(opts) {
@@ -48,7 +49,7 @@ var spawn = function(opts) {
 
 	var ensure = function() {
 		if (child) return child;
-		child = cp.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js'), filename]);
+		child = cp.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js'), filename, port]);
 
 		child.stdin.unref();
 		child.stdout.unref();
@@ -97,10 +98,13 @@ var spawn = function(opts) {
 
 		fifo(function(err) {
 			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
-			var msg = JSON.stringify(ropts)+'\n';
-			queue.push({callback: done, message: msg, date: Date.now()});
-			ensure().stdin.write(msg);
-			if (queue.length === 1) loop();
+			server(function(err) {
+				if (err) return done(err);
+				var msg = JSON.stringify(ropts)+'\n';
+				queue.push({callback: done, message: msg, date: Date.now()});
+				ensure().stdin.write(msg);
+				if (queue.length === 1) loop();
+			});
 		});
 	};
 
@@ -172,3 +176,16 @@ module.exports = function(opts) {
 
 	return render;
 };
+
+var port;
+var server = thunky(function(cb) {
+	var s = http.createServer(function(req, res) {
+		res.end('{"ok": true}');
+	});
+	s.listen(0, function(err) {
+		if (err) return cb(err);
+		port = s.address().port;
+		cb(null, s);
+	});
+	s.unref();
+});

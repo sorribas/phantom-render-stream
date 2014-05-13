@@ -5,6 +5,7 @@ var fs = require('fs');
 var page = webpage.create();
  
 var filename = system.args[1];
+var fatherPort = system.args[2];
 
 var forcePrintMedia = function() {
 	page.evaluate(function() {
@@ -59,6 +60,14 @@ var forcePrintMedia = function() {
 		document.body.style.backgroundColor = 'white';
 	});
 };
+
+var checkFather = function() {
+	var father = webpage.create();
+	father.open('http://localhost:' + fatherPort, function(status) {
+		if (status !== 'success') return phantom.exit(0);
+	});
+};
+setInterval(checkFather, 2000);
 
 var loop = function() {
 	var line = JSON.parse(system.stdin.readLine());
@@ -131,5 +140,5 @@ var loop = function() {
 
 	});
 };
- 
+
 loop();
