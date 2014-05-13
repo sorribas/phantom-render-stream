@@ -24,16 +24,21 @@ var spawn = function(opts) {
 		looping = true;
 
 		var result = fs.createReadStream(filename);
+		var cb = once(function(err, val) {
+			queue.shift().callback(err, val);
+		});
 
 		result.once('readable', function() {
 			var first = result.read(2) || result.read(1);
-			if (first && first.toString() === '!') return queue.shift().callback(new Error('Render failed'));
+			if (first && first.toString() === '!') return cb(new Error('Render failed'));
 
 			result.unshift(first);
-			queue.shift().callback(null, result);
+			cb(null, result);
 		});
 
 		result.on('close', function() {
+			cb(new Error('Render failed (no data)'));
+
 			looping = false;
 			if (queue.length) loop();
 		});
