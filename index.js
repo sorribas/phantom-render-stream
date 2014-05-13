@@ -113,10 +113,11 @@ var spawn = function(opts) {
 		clearTimeout(timeout);
 	};
 
+	if (!opts.timeout) return ret;
+
 	var timeoutFn = function() {
 		timeout = setTimeout(timeoutFn, 5000);
 		timeout.unref();
-		if (!opts.timeout) return;
 		if (!queue.length) return;
 		if (Date.now() - queue[0].date < opts.timeout) return;
 		if (child) child.kill();
