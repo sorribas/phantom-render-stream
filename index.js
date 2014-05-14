@@ -51,6 +51,14 @@ var spawn = function(opts) {
 		if (child) return child;
 		child = cp.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js'), filename, port]);
 
+		var onerror = once(function() {
+			child.kill();
+		});
+
+		child.stdin.on('error', onerror);
+		child.stdout.on('error', onerror);
+		child.stderr.on('error', onerror);
+
 		child.stdin.unref();
 		child.stdout.unref();
 		child.stderr.unref();
@@ -80,11 +88,6 @@ var spawn = function(opts) {
 
 	var free = function() {
 		ret.using--;
-	};
-
-	var restart = function() {
-		if (child) child.kill();
-		child = null;
 	};
 
 	var ret = function(ropts, cb) {
