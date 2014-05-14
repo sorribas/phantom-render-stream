@@ -97,6 +97,7 @@ var spawn = function(opts) {
 			if (stream) stream.on('end', free);
 			else free();
 			cb(err, stream);
+			if (opts.debug) console.log('queue size: ', queue.length);
 		};
 
 		fifo(function(err) {
