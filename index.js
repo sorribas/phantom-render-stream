@@ -107,6 +107,7 @@ var spawn = function(opts) {
 				queue.push({callback: done, message: msg, date: Date.now()});
 				ensure().stdin.write(msg);
 				if (queue.length === 1) loop();
+				if (opts.debug) console.log('queue size: ', queue.length);
 			});
 		});
 	};
