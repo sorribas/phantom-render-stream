@@ -49,7 +49,7 @@ var spawn = function(opts) {
 
 	var ensure = function() {
 		if (child) return child;
-		child = cp.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js'), filename, port]);
+		child = cp.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js'), filename]);
 
 		var onerror = once(function() {
 			child.kill();
@@ -101,14 +101,11 @@ var spawn = function(opts) {
 
 		fifo(function(err) {
 			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
-			server(function(err) {
-				if (err) return done(err);
-				var msg = JSON.stringify(ropts)+'\n';
-				queue.push({callback: done, message: msg, date: Date.now()});
-				ensure().stdin.write(msg);
-				if (queue.length === 1) loop();
-				if (opts.debug) console.log('queue size: ', queue.length);
-			});
+			var msg = JSON.stringify(ropts)+'\n';
+			queue.push({callback: done, message: msg, date: Date.now()});
+			ensure().stdin.write(msg);
+			if (queue.length === 1) loop();
+			if (opts.debug) console.log('queue size: ', queue.length);
 		});
 	};
 
@@ -180,16 +177,3 @@ module.exports = function(opts) {
 
 	return render;
 };
-
-var port;
-var server = thunky(function(cb) {
-	var s = http.createServer(function(req, res) {
-		res.end('{"ok": true}');
-	});
-	s.listen(0, function(err) {
-		if (err) return cb(err);
-		port = s.address().port;
-		cb(null, s);
-	});
-	s.unref();
-});

@@ -61,19 +61,19 @@ var forcePrintMedia = function() {
 	});
 };
 
-var checkFather = function() {
-	var father = webpage.create();
-	father.open('http://localhost:' + fatherPort, function(status) {
-		if (status !== 'success') {
-			fs.remove(filename);
-			return phantom.exit(0);
-		}
-	});
-};
-setInterval(checkFather, 2000);
-
 var loop = function() {
-	var line = JSON.parse(system.stdin.readLine());
+	var line = system.stdin.readLine();
+	if (!line.trim()) {
+		fs.remove(filename);
+		return phantom.exit(0);
+	}
+
+	try {
+		line = JSON.parse(line);
+	} catch (err) {
+		fs.remove(filename);
+		return process.exit(0);
+	}
 
 	if (!page) page = webpage.create();
 
