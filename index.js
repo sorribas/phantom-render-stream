@@ -49,7 +49,8 @@ var spawn = function(opts) {
 
 	var ensure = function() {
 		if (child) return child;
-		child = cp.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js'), filename]);
+    var phantomJsArgs = [path.join(__dirname, 'phantom-process.js'), filename];
+		child = cp.spawn(phantomjsPath, phantomJsArgs);
 
 		var onerror = once(function() {
 			child.kill();
@@ -71,6 +72,10 @@ var spawn = function(opts) {
 			child.stderr.resume();
 			child.stdout.resume();
 		}
+
+    child.on('error', function(error) {
+      throw new Error("Failed to spawn Phantom. Error was: '"+error+"'. System call was: "+phantomjsPath+' '+phantomJsArgs.join(' '));
+    });
 
 		child.on('exit', function() {
 			child = null;
