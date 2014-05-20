@@ -15,9 +15,15 @@ First of all, you need to have phantomjs installed on the machine you use the mo
 ``` js
 var phantom = require('phantom-render-stream');
 var fs = require('fs');
+var outputStream = fs.createWriteStream('out.png');
+
+// Close the phantom process when we are done streaming
+outputStream.on('finish', function () {
+  render.destroy();
+});
 
 var render = phantom();
-render('http://example.com/my-site').pipe(fs.createWriteStream('out.png'));
+render('http://example.com/my-site').pipe(outputStream);
 ```
 
 You can also pass some options
