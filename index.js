@@ -83,7 +83,7 @@ var spawn = function(opts) {
 	};
 
 	var fifo = thunky(function(cb) {
-		cp.spawn('mkfifo', [filename]).on('exit', cb).on('error', cb);
+		cp.spawn('mkfifo', [filename], { stdio: 'inherit' }).on('exit', cb).on('error', cb);
 	});
 
 	var free = function() {
