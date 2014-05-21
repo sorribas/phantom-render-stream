@@ -24,8 +24,29 @@ var spawn = function(opts) {
 		if (looping) return;
 		looping = true;
 
+		var retries = 0;
+		var timeoutFn = function() {
+			if (++retries >= (opts.maxRetries || 2)) {
+				cb(new Error('Too many retries'));
+				looping = false;
+				if (queue.length) loop();
+			} else {
+				timeout = setTimeout(timeoutFn, 5000);
+				timeout.unref();
+			}
+			if (child) child.kill();
+			
+		};
+		var timeout; 
+		if (opts.timeout) {
+			timeout = setTimeout(timeoutFn, opts.timeout);
+			timeout.unref();
+		}
+
+
 		var result = fs.createReadStream(filename);
 		var cb = once(function(err, val) {
+			clearTimeout(timeout);
 			queue.shift().callback(err, val);
 		});
 
@@ -116,20 +137,7 @@ var spawn = function(opts) {
 		fs.unlink(filename, function() {
 			if (cb) cb();
 		});
-		clearTimeout(timeout);
 	};
-
-	if (!opts.timeout) return ret;
-
-	var timeoutFn = function() {
-		timeout = setTimeout(timeoutFn, 5000);
-		timeout.unref();
-		if (!queue.length) return;
-		if (Date.now() - queue[0].date < opts.timeout) return;
-		if (child) child.kill();
-	};
-	var timeout = setTimeout(timeoutFn, 5000);
-	timeout.unref();
 
 	return ret;
 };
