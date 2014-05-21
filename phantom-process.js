@@ -88,6 +88,7 @@ var loop = function() {
 		margin: line.margin || '0cm'
 	};
 
+	if (line.userAgent) page.settings.userAgent = line.userAgent;
 	if (line.crop) page.clipRect = page.viewportSize;
 
 	page.open(line.url, function(st) {
