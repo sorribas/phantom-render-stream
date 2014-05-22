@@ -52,6 +52,7 @@ var spawn = function(opts) {
 
 		result.once('readable', function() {
 			var first = result.read(2) || result.read(1);
+      // Receiving exactly a "!" back from phantom-process.js indicates failure.
 			if (first && first.toString() === '!') return cb(new Error('Render failed'));
 
 			result.unshift(first);

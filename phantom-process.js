@@ -95,6 +95,7 @@ var loop = function() {
 	if (line.crop) page.clipRect = page.viewportSize;
 
 	page.open(line.url, function(st) {
+    // If there's a failure, communicate that through the FIFO by writing just the "!" character.
 		if (st !== 'success') {
 			fs.write(fifoFile, '!', 'w');
 			page = null;
