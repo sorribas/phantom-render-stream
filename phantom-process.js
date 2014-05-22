@@ -94,9 +94,9 @@ var loop = function() {
 	if (line.userAgent) page.settings.userAgent = line.userAgent;
 	if (line.crop) page.clipRect = page.viewportSize;
 
-	page.open(line.url, function(st) {
+	page.open(line.url, function(requestStatus) {
     // If there's a failure, communicate that through the FIFO by writing just the "!" character.
-		if (st !== 'success') {
+		if (requestStatus !== 'success') {
 			fs.write(fifoFile, '!', 'w');
 			page = null;
 			loop();
