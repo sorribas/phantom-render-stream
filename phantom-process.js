@@ -4,7 +4,7 @@ var fs = require('fs');
  
 var page = webpage.create();
  
-var filename = system.args[1];
+var fifoFile = system.args[1];
 var fatherPort = system.args[2];
 
 var forcePrintMedia = function() {
@@ -64,14 +64,14 @@ var forcePrintMedia = function() {
 var loop = function() {
 	var line = system.stdin.readLine();
 	if (!line.trim()) {
-		fs.remove(filename);
+		fs.remove(fifoFile);
 		return phantom.exit(0);
 	}
 
 	try {
 		line = JSON.parse(line);
 	} catch (err) {
-		fs.remove(filename);
+		fs.remove(fifoFile);
 		return process.exit(0);
 	}
 
@@ -93,7 +93,7 @@ var loop = function() {
 
 	page.open(line.url, function(st) {
 		if (st !== 'success') {
-			fs.write(filename, '!', 'w');
+			fs.write(fifoFile, '!', 'w');
 			page = null;
 			loop();
 			return;
@@ -102,7 +102,7 @@ var loop = function() {
 		var render = function() {
 			setTimeout(function() {
 				if (line.printMedia) forcePrintMedia();
-				page.render(filename, {format:line.format || 'png'});
+				page.render(fifoFile, {format:line.format || 'png'});
 				page = null;
 				loop();
 			}, 0);
