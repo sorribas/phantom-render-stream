@@ -146,7 +146,11 @@ module.exports = function(opts) {
 	opts = opts || {};
 	opts.pool = opts.pool || 1;
 
-	var pool = Array(opts.pool).join(',').split(',').map(spawn.bind(null, opts));
+  // Create a pool size equal to the number provided in opts.pool
+  var pool = [];
+  for (var i = 0; i < opts.pool; i++) {
+    pool.push(spawn(opts));
+  }
 
 	var select = function() {
 		return pool.reduce(function(a, b) {
