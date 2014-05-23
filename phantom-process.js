@@ -5,7 +5,6 @@ var fs = require('fs');
 var page = webpage.create();
  
 var filename = system.args[1];
-var fatherPort = system.args[2];
 
 var forcePrintMedia = function() {
 	page.evaluate(function() {
