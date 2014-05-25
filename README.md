@@ -11,7 +11,8 @@ New requests are added to the pool member with the shortest queue length.
 
 ## Usage
 
-First of all, you need to have phantomjs installed on the machine you use the module.
+This module depends on the [phantomjs](https://www.npmjs.org/package/phantomjs) module, which will install
+`phantomjs` for you if you don't already have it.
 
 ``` js
 var phantom = require('phantom-render-stream');
