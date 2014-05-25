@@ -7,6 +7,7 @@ Render a webpage and get the image as a stream.
 [![Build Status](https://travis-ci.org/e-conomic/phantom-render-stream.png)](https://travis-ci.org/e-conomic/phantom-render-stream)
 
 It uses a pool of phantom processes so it doesn't need to spawn a new process for each website.
+New requests are added to the pool member with the shortest queue length.
 
 ## Usage
 
