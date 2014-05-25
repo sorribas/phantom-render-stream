@@ -8,7 +8,7 @@ Render a webpage and get the image as a stream.
 
 It uses a pool of phantom processes so it doesn't need to spawn a new process for each website.
 
-## Usage
+## Synopsis
 
 First of all, you need to have phantomjs installed on the machine you use the module.
 
@@ -37,8 +37,17 @@ Or override the options for each render stream
 render(myUrl, {format:'jpeg', width: 1280, height: 960}).pipe(...)
 ```
 
+## Supported output formats
 
+We support the output formats that [Phantom's render method](http://phantomjs.org/api/webpage/method/render.html)
+supports. At the time of this writing these are:
 
+ * png
+ * gif
+ * jpg
+ * pdf
+
+## Example
 
 Since the interface is just a stream you can pipe the web site anywhere!
 Try installing [picture-tube](https://github.com/substack/picture-tube) and run the following example
@@ -87,9 +96,9 @@ Here is an example to illustrate it better.
 
 ## OS Dependencies
 
-We `mkfifo` which is known to exist and work on OS X and Linux, but may not work other plaforms,
+We use `mkfifo` which is known to exist and work on OS X and Linux, but may not work other plaforms,
 particularly Windows, which has different notions about named pipes.
 
 ## License
 
-MIT
+[MIT](http://opensource.org/licenses/MIT)
