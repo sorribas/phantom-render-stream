@@ -87,9 +87,9 @@ Here is an example to illustrate it better.
 
 ## OS Dependencies
 
-We `mkfifo` which is known to exist and work on OS X and Linux, but may not work other plaforms,
+We use `mkfifo` which is known to exist and work on OS X and Linux, but may not work other plaforms,
 particularly Windows, which has different notions about named pipes.
 
 ## License
 
-MIT
+[MIT](http://opensource.org/licenses/MIT)
