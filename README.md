@@ -22,14 +22,22 @@ var render = phantom();
 render('http://example.com/my-site').pipe(fs.createWriteStream('out.png'));
 ```
 
-You can also pass some options
+You can also pass some options:
 
 ``` js
 var render = phantom({
-	pool: 5, // change the pool size. defaults to 1,
-	format: 'jpeg', // the default output format
-	width: 1280, // changes the width size. default to 1280
-	height: 800 // changes the height size. default to 960
+	spool				: 5,					// change the pool size. defaults to 1,
+	format			: 'jpeg',			// the default output format
+	width				: 1280,				// changes the width size. default to 1280
+	height			: 800,				// changes the height size. default to 960
+	debug				: false,			// enable some more debugging. Defaults to false. More details in Troubleshooting section.
+	fifoDir			: '/some/path'// Where named pipes are stored. Defaults to `os.tmpDir()`
+	paperFormat : 'A4',				// defaults to A4. Also supported: 'A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid'.
+	orientation : 'portriat'	// defaults to portrait. 'landscape' is also valid
+	margin			: '0cm'				// defaults to 0cm. Supported dimension units are: 'mm', 'cm', 'in', 'px'. No unit means 'px'.
+	userAgent		: ''					// No default.
+	crop				: false				// Defaults to false
+	printMedia	: false				// Defaults to false. Force the use of a print stylesheet.
 });
 ```
 
