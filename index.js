@@ -71,7 +71,8 @@ var spawn = function(opts) {
 
 	var ensure = function() {
 		if (child) return child;
-		child = cp.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js'), filename]);
+    var phantomJsArgs = [path.join(__dirname, 'phantom-process.js'), filename];
+		child = cp.spawn(phantomjsPath, phantomJsArgs);
 
 		var onerror = once(function() {
 			child.kill();
@@ -94,6 +95,10 @@ var spawn = function(opts) {
 			child.stdout.resume();
 		}
 
+    child.on('error', function(error) {
+      throw new Error("Failed to spawn Phantom. Error was: '"+error+"'. System call was: "+phantomjsPath+' '+phantomJsArgs.join(' '));
+    });
+
 		child.on('exit', function() {
 			child = null;
 			if (!queue.length) return;
@@ -105,7 +110,7 @@ var spawn = function(opts) {
 	};
 
 	var fifo = thunky(function(cb) {
-		cp.spawn('mkfifo', [filename]).on('exit', cb).on('error', cb);
+		cp.spawn('mkfifo', [filename], { stdio: 'inherit' }).on('exit', cb).on('error', cb);
 	});
 
 	var free = function() {
@@ -123,7 +128,7 @@ var spawn = function(opts) {
 		};
 
 		fifo(function(err) {
-			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
+			if (err) return done(typeof err === 'number' ? new Error('mkfifo '+filename+' exited with '+err) : err);
 			var msg = JSON.stringify(ropts)+'\n';
 			queue.push({callback: done, message: msg, date: Date.now()});
 			ensure().stdin.write(msg);
