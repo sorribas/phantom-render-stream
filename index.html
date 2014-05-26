@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<script>
+		window.renderable = false;
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', 'http://sorribas.org', false);
+		xhr.send(null);
+		setTimeout(function() {
+			window.renderable = true;
+		}, 500)
+	</script>
+	<h1>hello</h1>
+</body>
+</html>

@@ -1,10 +1,13 @@
+// Code to be run by PhantomJS.
+// The docs for these modules are here: http://phantomjs.org/api/
+// Note that the 'fs' module here has a different API than the one in node.js core.
 var webpage = require('webpage');
 var system = require('system');
 var fs = require('fs');
  
 var page = webpage.create();
  
-var filename = system.args[1];
+var fifoFile = system.args[1];
 
 var forcePrintMedia = function() {
 	page.evaluate(function() {
@@ -63,14 +66,14 @@ var forcePrintMedia = function() {
 var loop = function() {
 	var line = system.stdin.readLine();
 	if (!line.trim()) {
-		fs.remove(filename);
+		fs.remove(fifoFile);
 		return phantom.exit(0);
 	}
 
 	try {
 		line = JSON.parse(line);
 	} catch (err) {
-		fs.remove(filename);
+		fs.remove(fifoFile);
 		return process.exit(0);
 	}
 
@@ -90,9 +93,10 @@ var loop = function() {
 	if (line.userAgent) page.settings.userAgent = line.userAgent;
 	if (line.crop) page.clipRect = page.viewportSize;
 
-	page.open(line.url, function(st) {
-		if (st !== 'success') {
-			fs.write(filename, '!', 'w');
+	page.open(line.url, function(requestStatus) {
+    // If there's a failure, communicate that through the FIFO by writing just the "!" character.
+		if (requestStatus !== 'success') {
+			fs.write(fifoFile, '!', 'w');
 			page = null;
 			loop();
 			return;
@@ -101,7 +105,7 @@ var loop = function() {
 		var render = function() {
 			setTimeout(function() {
 				if (line.printMedia) forcePrintMedia();
-				page.render(filename, {format:line.format || 'png'});
+				page.render(fifoFile, {format:line.format || 'png'});
 				page = null;
 				loop();
 			}, 0);
