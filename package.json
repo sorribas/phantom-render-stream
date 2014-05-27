@@ -4,11 +4,12 @@
   "description": "Render a webpage and get the image as a stream",
   "repository": "e-conomic/phantom-render-stream",
   "dependencies": {
-    "thunky": "^0.1.0",
     "after-all": "~1.0.0",
-    "xtend": "~3.0.0",
+    "fwd-stream": "^1.0.4",
     "once": "~1.3.0",
-    "phantomjs": "1.9.x"
+    "phantomjs": "1.9.x",
+    "thunky": "^0.1.0",
+    "xtend": "~3.0.0"
   },
   "devDependencies": {
     "tape": "^2.12.3",
