@@ -19,10 +19,14 @@ var fakeFifo = function(filename, inc) {
 	var target = filename+'-'+inc;
 	return fwd.readable(function(cb) {
 		var tries = 10;
+		var prevSize = 0;
 		var kick = function() {
 			fs.stat(target, function(err, st) {
 				if (err) return setTimeout(kick, 100);
-				if (tries-- > 0 && !st.size) return setTimeout(kick, 100);
+				if ((st.size && st.size !== prevSize) || (tries-- > 0 && !st.size)) {
+					prevSize = st.size;
+					return setTimeout(kick, 100);
+				}
 				var rs = fs.createReadStream(target);
 
 				rs.on('close', function() {
