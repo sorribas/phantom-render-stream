@@ -8,6 +8,8 @@ var fs = require('fs');
 var page = webpage.create();
  
 var fifoFile = system.args[1];
+var platform = system.args[2];
+var inc = 0;
 
 var forcePrintMedia = function() {
 	page.evaluate(function() {
@@ -94,9 +96,11 @@ var loop = function() {
 	if (line.crop) page.clipRect = page.viewportSize;
 
 	page.open(line.url, function(requestStatus) {
+		var file = platform === 'win32' ? fifoFile+'-'+(inc++) : fifoFile;
+
     // If there's a failure, communicate that through the FIFO by writing just the "!" character.
 		if (requestStatus !== 'success') {
-			fs.write(fifoFile, '!', 'w');
+			fs.write(file, '!', 'w');
 			page = null;
 			loop();
 			return;
@@ -105,7 +109,7 @@ var loop = function() {
 		var render = function() {
 			setTimeout(function() {
 				if (line.printMedia) forcePrintMedia();
-				page.render(fifoFile, {format:line.format || 'png'});
+				page.render(file, {format:line.format || 'png'});
 				page = null;
 				loop();
 			}, 0);
