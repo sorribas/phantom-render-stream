@@ -4,9 +4,9 @@
 var webpage = require('webpage');
 var system = require('system');
 var fs = require('fs');
- 
+
 var page = webpage.create();
- 
+
 var fifoFile = system.args[1];
 var platform = system.args[2];
 var inc = 0;
@@ -93,7 +93,12 @@ var loop = function() {
 	};
 
 	if (line.userAgent) page.settings.userAgent = line.userAgent;
-	if (line.crop) page.clipRect = page.viewportSize;
+	if (line.crop) {
+		var clipRect = JSON.parse(JSON.stringify(page.viewportSize));
+		clipRect.top = line.cropMarginTop || 0;
+		clipRect.left = line.cropMarginLeft || 0;
+		page.clipRect = clipRect;
+	}
 
 	page.open(line.url, function(requestStatus) {
 		var file = platform === 'win32' ? fifoFile+'-'+(inc++) : fifoFile;
@@ -122,7 +127,7 @@ var loop = function() {
 
 			var rendered = false;
 			page.onAlert = function(msg) {
-				if (rendered || msg !== 'webpage-renderable') return; 
+				if (rendered || msg !== 'webpage-renderable') return;
 				rendered = true;
 				clearTimeout(timeout);
 				render();
