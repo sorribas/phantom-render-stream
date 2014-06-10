@@ -94,10 +94,12 @@ var loop = function() {
 
 	if (line.userAgent) page.settings.userAgent = line.userAgent;
 	if (line.crop) {
-		var clipRect = JSON.parse(JSON.stringify(page.viewportSize));
-		clipRect.top = line.cropMarginTop || 0;
-		clipRect.left = line.cropMarginLeft || 0;
-		page.clipRect = clipRect;
+		page.clipRect = {
+			width: line.width || 1280,
+			height: line.height || 960,
+			top: line.cropMarginTop || 0,
+			left: line.cropMarginLeft || 0
+		}
 	}
 
 	page.open(line.url, function(requestStatus) {
