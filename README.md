@@ -37,6 +37,8 @@ var render = phantom({
 	margin      : '0cm'        // defaults to 0cm. Supported dimension units are: 'mm', 'cm', 'in', 'px'. No unit means 'px'.
 	userAgent   : ''           // No default.
 	crop        : false        // Defaults to false
+	cropMarginTop: 0           // Works only if crop = true. defaults to 0
+	cropMarginLeft: 0          // Works only if crop = true. defaults to 0
 	printMedia  : false        // Defaults to false. Force the use of a print stylesheet.
 });
 ```
@@ -75,7 +77,7 @@ render('http://google.com')
 ## Deferred render
 
 If you need your page to do something before phantom renders it you just need to immediately set
-`window.renderable` to false. If that is set when the page is opened the module will wait for 
+`window.renderable` to false. If that is set when the page is opened the module will wait for
 `window.renderable` to be set to true and when this happens the render will occur.
 
 Here is an example to illustrate it better.
