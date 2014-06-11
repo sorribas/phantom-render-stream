@@ -93,7 +93,15 @@ var loop = function() {
 	};
 
 	if (line.userAgent) page.settings.userAgent = line.userAgent;
-	if (line.crop) page.clipRect = page.viewportSize;
+
+	if (line.crop) {
+		page.clipRect = {
+			width: line.crop.width || page.viewportSize.width,
+			height: line.crop.height || page.viewportSize.height,
+			top: line.crop.top || 0,
+			left: line.crop.left || 0
+		}
+	}
 
 	page.open(line.url, function(requestStatus) {
 		var file = platform === 'win32' ? fifoFile+'-'+(inc++) : fifoFile;

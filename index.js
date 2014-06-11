@@ -198,6 +198,8 @@ module.exports = function(opts) {
 	var render = function(url, ropts) {
 		ropts = xtend(opts, ropts);
 		ropts.url = url;
+		if (ropts.crop === true) ropts.crop = {top:0, left:0}
+
 		var pt = stream.PassThrough();
 		select()(ropts, function(err, stream) {
 			if (err) return pt.emit('error', err);

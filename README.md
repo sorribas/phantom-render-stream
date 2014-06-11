@@ -36,7 +36,7 @@ var render = phantom({
 	orientation : 'portriat'   // defaults to portrait. 'landscape' is also valid
 	margin      : '0cm'        // defaults to 0cm. Supported dimension units are: 'mm', 'cm', 'in', 'px'. No unit means 'px'.
 	userAgent   : ''           // No default.
-	crop        : false        // Defaults to false
+	crop        : false        // Defaults to false. Set to true or {top:5, left:5} to add margin
 	printMedia  : false        // Defaults to false. Force the use of a print stylesheet.
 });
 ```
