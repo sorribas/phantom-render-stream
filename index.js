@@ -92,6 +92,7 @@ var spawn = function(opts) {
 			first.tries++;
 			ensure().stdin.write(first.message);
 			readNextResult(function(err, stream) {
+				if (timeout) clearTimeout(timeout);
 				if (err && first.tries++ < maxRetries) return retry();
 				queue.shift().callback(err, stream);
 				if (opts.debug) console.log('queue size: '+queue.length);
@@ -164,11 +165,9 @@ var spawn = function(opts) {
 		fifo(function(err) {
 			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
 
-			var msg = JSON.stringify(ropts)+'\n';
 			queue.push({
 				callback: done,
-				message: msg,
-				date: Date.now(),
+				message: JSON.stringify(ropts)+'\n',
 				tries: 0
 			});
 
