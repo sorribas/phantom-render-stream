@@ -46,60 +46,64 @@ var spawn = function(opts) {
 	var child;
 	var queue = [];
 	var inc = 0;
+	var maxRetries = opts.retries || 1;
 
 	var filename = 'phantom-queue-' + process.pid + '-' + Math.random().toString(36).slice(2);
 	if (opts.fifoDir) filename = path.join(opts.fifoDir, filename);
 	else filename = path.join(os.tmpDir(), filename);
 
-	var looping = false;
-	var loop = function() {
-		if (looping) return;
-		looping = true;
+	var reader;
+	var readNextResult = function(done) {
+		var cb = once(function(err, stream) {
+			reader = null;
+			done(err, stream)
+		});
 
-		var retries = 0;
-		var timeoutFn = function() {
-			if (++retries >= (opts.maxRetries || 2)) {
-				cb(new Error('Too many retries'));
-				looping = false;
-				if (queue.length) loop();
-			} else {
-				timeout = setTimeout(timeoutFn, 5000);
-				timeout.unref();
-			}
-			if (child) child.kill();
-			
-		};
+		var result = reader = platform === 'win32' ? fakeFifo(filename, inc++) : fs.createReadStream(filename);
 
-		var timeout; 
-		if (opts.timeout) {
-			timeout = setTimeout(timeoutFn, opts.timeout);
-			timeout.unref();
-		}
-
-		var result = platform === 'win32' ? fakeFifo(filename, inc++) : fs.createReadStream(filename);
-
-		var cb = once(function(err, val) {
-			clearTimeout(timeout);
-			queue.shift().callback(err, val);
+		result.on('error', cb);
+		result.on('close', function() {
+			cb(new Error('Render failed (no data)'));
 		});
 
 		result.once('readable', function() {
 			var first = result.read(2) || result.read(1);
 			// Receiving exactly a "!" back from phantom-process.js indicates failure.
-			if (first && first.toString() === '!') return cb(new Error('Render failed'));
+
+			if (first && first.toString() === '!') {
+				result.destroy();
+				return cb(new Error('Render failed'));
+			}
 
 			result.unshift(first);
 			cb(null, result);
 		});
+	};
 
-		result.on('error', cb);
+	var update = function() {
+		if (!queue.length || queue[0].tries) return;
 
-		result.on('close', function() {
-			cb(new Error('Render failed (no data)'));
+		if (opts.debug) console.log('queue size: '+queue.length);
 
-			looping = false;
-			if (queue.length) loop();
-		});
+		var timeout;
+
+		var retry = function() {
+			var first = queue[0];
+			first.tries++;
+			ensure().stdin.write(first.message);
+			readNextResult(function(err, stream) {
+				if (err && first.tries++ < maxRetries) return retry();
+				queue.shift().callback(err, stream);
+				if (opts.debug) console.log('queue size: '+queue.length);
+			})
+		};
+
+		var kill = function() {
+			if (child) child.kill();
+		};
+
+		retry();
+		if (opts.timeout) timeout = setTimeout(kill, opts.timeout);
 	};
 
 	var ensure = function() {
@@ -131,11 +135,9 @@ var spawn = function(opts) {
 
 		child.on('exit', function() {
 			child = null;
-			if (!queue.length) return;
-			queue.forEach(function(el) {
-				ensure().stdin.write(el.message);
-			});
+			if (reader) reader.destroy();
 		});
+
 		return child;
 	};
 
@@ -154,17 +156,23 @@ var spawn = function(opts) {
 		var done = function(err, stream) {
 			if (stream) stream.on('end', free);
 			else free();
+
+			update();
 			cb(err, stream);
-			if (opts.debug) console.log('queue size: ', queue.length);
 		};
 
 		fifo(function(err) {
 			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
+
 			var msg = JSON.stringify(ropts)+'\n';
-			queue.push({callback: done, message: msg, date: Date.now()});
-			ensure().stdin.write(msg);
-			if (queue.length === 1) loop();
-			if (opts.debug) console.log('queue size: ', queue.length);
+			queue.push({
+				callback: done,
+				message: msg,
+				date: Date.now(),
+				tries: 0
+			});
+
+			update();
 		});
 	};
 
