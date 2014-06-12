@@ -12,6 +12,7 @@ var phantomjsPath = require('phantomjs').path;
 var fwd = require('fwd-stream');
 
 var platform = process.platform;
+platform = 'win32'; // tmp disable fifo.
 
 var noop = function() {};
 
