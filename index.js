@@ -1,238 +1,226 @@
-var fs = require('fs');
-var cp = require('child_process');
-var stream = require('stream');
-var thunky = require('thunky');
-var os = require('os');
-var path = require('path');
-var afterAll = require('after-all');
-var xtend = require('xtend');
-var once = require('once');
-var http = require('http');
+var mkdirp = require('mkdirp')
+var thunky = require('thunky')
+var fs = require('fs')
+var pump = require('pump')
+var stream = require('stream')
+var once = require('once')
+var ldjson = require('ldjson-stream')
+var duplexer = require('duplexer2')
+var proc = require('child_process')
+var xtend = require('xtend')
+var hat = require('hat')
+var path = require('path')
+var util = require('util')
 var phantomjsPath = require('phantomjs').path;
-var fwd = require('fwd-stream');
 
-var platform = process.platform;
+var noop = function() {}
 
-var noop = function() {};
+var Proxy = function() {
+  stream.Transform.call(this)
+  this.bytesRead = 0
+  this.destroyed = false
+  this.on('end', function() {
+    this.destroy()
+  })
+}
 
-var fakeFifo = function(filename, inc) {
-	var target = filename+'-'+inc;
-	return fwd.readable(function(cb) {
-		var tries = 10;
-		var prevSize = 0;
-		var kick = function() {
-			fs.stat(target, function(err, st) {
-				if (err) return setTimeout(kick, 100);
-				if ((st.size && st.size !== prevSize) || (tries-- > 0 && !st.size)) {
-					prevSize = st.size;
-					return setTimeout(kick, 100);
-				}
-				var rs = fs.createReadStream(target);
+util.inherits(Proxy, stream.Transform)
 
-				rs.on('close', function() {
-					fs.unlink(target, noop);
-				});
+Proxy.prototype._transform = function(data, enc, cb) {
+  if (this.destroyed) return
+  this.bytesRead += data.length
+  cb(null, data)
+}
 
-				cb(null, rs);
-			});
-		};
+Proxy.prototype.destroy = function(err) {
+  if (this.destroyed) return
+  this.destroyed = true
+  if (err) this.emit('error', err)
+  this.emit('close')
+}
 
-		kick();
-	});
-};
+var spawn = function() {
+  var child = proc.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js')])
 
-var spawn = function(opts) {
-	opts = opts || {};
-	var child;
-	var queue = [];
-	var inc = 0;
-	var maxRetries = opts.retries || 1;
+  var input = ldjson.serialize()
+  var output = ldjson.parse()
 
-	var filename = 'phantom-queue-' + process.pid + '-' + Math.random().toString(36).slice(2);
-	if (opts.fifoDir) filename = path.join(opts.fifoDir, filename);
-	else filename = path.join(os.tmpDir(), filename);
+  child.stdout.pipe(output)
+  input.pipe(child.stdin)
 
-	var reader;
-	var readNextResult = function(done) {
-		var cb = once(function(err, stream) {
-			reader = null;
-			done(err, stream)
-		});
+  var onerror = once(function() {
+    child.kill();
+  });
 
-		var result = reader = platform === 'win32' ? fakeFifo(filename, inc++) : fs.createReadStream(filename);
+  child.stdin.on('error', onerror);
+  child.stdout.on('error', onerror);
+  child.stderr.on('error', onerror);
 
-		result.on('error', cb);
-		result.on('close', function() {
-			cb(new Error('Render failed (no data)'));
-		});
+  var result = duplexer(input, output)
 
-		result.once('readable', function() {
-			var first = result.read(2) || result.read(1);
-			// Receiving exactly a "!" back from phantom-process.js indicates failure.
+  result.process = child
 
-			if (first && first.toString() === '!') {
-				result.destroy();
-				return cb(new Error('Render failed'));
-			}
+  result.ref = function() {
+    child.stdout.ref()
+    child.stderr.ref()
+    child.stdin.ref()
+    child.ref()
+  }
 
-			result.unshift(first);
-			cb(null, result);
-		});
-	};
+  result.unref = function() {
+    child.stdout.unref()
+    child.stderr.unref()
+    child.stdin.unref()
+    child.unref()
+  }
 
-	var update = function() {
-		if (!queue.length || queue[0].tries) return;
+  var onclose = once(function() {
+    result.emit('close')
+  })
 
-		if (opts.debug) console.log('queue size: '+queue.length);
+  child.on('exit', onclose)
+  child.on('close', onclose)
 
-		var timeout;
+  return result
+}
 
-		var retry = function() {
-			var first = queue[0];
-			first.tries++;
-			ensure().stdin.write(first.message);
-			readNextResult(function(err, stream) {
-				if (timeout) clearTimeout(timeout);
-				if (err && first.tries++ < maxRetries) return retry();
-				queue.shift().callback(err, stream);
-				if (opts.debug) console.log('queue size: '+queue.length);
-			})
-		};
+var pool = function(size, timeout) {
+  var workers = []
+  for (var i = 0; i < size; i++) workers.push({queued:[], stream:null})
 
-		var kill = function() {
-			if (child) child.kill();
-		};
+  var dup = new stream.Duplex({objectMode:true})
 
-		retry();
-		if (opts.timeout) timeout = setTimeout(kill, opts.timeout);
-	};
+  var ontimeout = function() {
+    var now = Date.now()
+    for (var i = 0; i < workers.length; i++) {
+      var sent = workers.queued.length && workers.queued[0].sent
+      if (sent && (now - sent) > timeout) workers.stream.process.kill()
+    }
+  }
 
-	var ensure = function() {
-		if (child) return child;
+  if (timeout) setInterval(ontimeout, 2000)
 
-		inc = 0;
-		child = cp.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js'), filename, platform]);
+  var update = function() {
+    for (var i = 0; i < workers.length; i++) {
+      if (!workers[i].stream) continue
+      if (workers[i].queued.length) workers[i].stream.ref()
+      else workers[i].stream.unref()
+    }
+  }
 
-		var onerror = once(function() {
-			child.kill();
-		});
+  var select = function() {
+    var worker = workers.reduce(function(a,b) {
+      return a.queued.length < b.queued.length ? a : b
+    })
 
-		child.stdin.on('error', onerror);
-		child.stdout.on('error', onerror);
-		child.stderr.on('error', onerror);
+    if (worker.stream) return worker
 
-		child.stdin.unref();
-		child.stdout.unref();
-		child.stderr.unref();
-		child.unref();
+    worker.stream = spawn()
 
-		if (opts.debug) {
-			child.stderr.pipe(process.stdout);
-			child.stdout.pipe(process.stdout);
-		} else {
-			child.stderr.resume();
-			child.stdout.resume();
-		}
+    worker.stream.on('close', function() {
+      var queued = worker.queued
+      worker.queued = []
+      worker.stream = null
 
-		child.on('exit', function() {
-			child = null;
-			if (reader) reader.destroy();
-		});
+      // emit all data as success=false
+      queued.forEach(function(data) {
+        data.success = false
+        dup.push(data)
+      })
+    })
 
-		return child;
-	};
+    worker.stream.on('data', function(data) {
+      for (var i = 0; i < worker.queued.length; i++) {
+        var cand = worker.queued[i]
+        if (cand.id === data.id) {
+          worker.queued.splice(i, 1)
+          update()
+          break
+        }
+      }
 
-	var fifo = thunky(function(cb) {
-		if (platform === 'win32') return cb();
-		cp.spawn('mkfifo', [filename]).on('exit', cb).on('error', cb);
-	});
+      dup.push(data)
+    })
 
-	var free = function() {
-		ret.using--;
-	};
+    return worker
+  }
 
-	var ret = function(ropts, cb) {
-		ret.using++;
+  dup._write = function(data, enc, cb) {
+    var worker = select()
+    worker.queued.push(data)
+    worker.stream.write(data)
+    update()
+    cb()
+  }
 
-		var done = function(err, stream) {
-			if (stream) stream.on('end', free);
-			else free();
+  dup._read = function() {
+    // do nothing ... backpressure is not an issue here
+  }
 
-			update();
-			cb(err, stream);
-		};
+  return dup
+}
 
-		fifo(function(err) {
-			if (err) return done(typeof err === 'number' ? new Error('mkfifo exited with '+err) : err);
+var create = function(opts) {
+  if (!opts) opts = {}
 
-			queue.push({
-				callback: done,
-				message: JSON.stringify(ropts)+'\n',
-				tries: 0
-			});
+  var renderTimeout = opts.timeout
+  var poolSize = opts.pool || 1
+  var retries = opts.retries || 1
+  var tmp = opts.tmp || '/tmp/phantom-render-stream'
+  var format = opts.format || 'png'
 
-			update();
-		});
-	};
+  var worker = pool(poolSize, renderTimeout)
+  var queued = {}
 
-	ret.using = 0;
-	ret.destroy = function(cb) {
-		if (child) child.kill();
-		fs.unlink(filename, function() {
-			if (cb) cb();
-		});
-	};
+  worker.on('data', function(data) {
+    var id = data.id
+    var proxy = queued[data.id]
+    if (!proxy) return
 
-	return ret;
-};
+    if (!data.success && data.tries < retries) {
+      fs.unlink(data.filename, noop)
+      data.tries++
+      data.filename = path.join(tmp, hat()) + '.' + data.format
+      data.sent = Date.now()
+      return worker.write(data)
+    }
 
-module.exports = function(opts) {
-	opts = opts || {};
-	opts.pool = opts.pool || 1;
+    delete queued[data.id]
+    if (!data.success) return proxy.destroy(new Error('Render failed ('+data.tries+' tries)'))
 
-	// Create a pool size equal to the number provided in opts.pool
-	var pool = [];
-	for (var i = 0; i < opts.pool; i++) {
-		pool.push(spawn(opts));
-	}
+    pump(fs.createReadStream(data.filename), proxy, function() {
+      fs.unlink(data.filename, noop)
+    })
+  })
 
-	var select = function() {
-		return pool.reduce(function(a, b) {
-			return a.using <= b.using ? a : b;
-		});
-	};
+  var mkdir = thunky(function(cb) {
+    mkdirp(tmp, cb)
+  })
 
-	var render = function(url, ropts) {
-		ropts = xtend(opts, ropts);
-		ropts.url = url;
-		if (ropts.crop === true) ropts.crop = {top:0, left:0}
+  var render = function(url, ropts) {
+    ropts = xtend({format:format, url:url}, ropts)
+    ropts.filename = path.join(tmp, hat()) + '.' + ropts.format
+    ropts.id = hat()
+    ropts.sent = Date.now()
+    ropts.tries = 0
+    if (ropts.crop === true) ropts.crop = {top:0, left:0}
 
-		var pt = stream.PassThrough();
-		select()(ropts, function(err, stream) {
-			if (err) return pt.emit('error', err);
-			if (destroyed) return stream.destroy();
-			stream.pipe(pt);
-			pt.destroy = once(function() {
-				stream.destroy();
-				pt.emit('close');
-			});
-		});
+    var proxy = queued[ropts.id] = new Proxy()
 
-		var destroyed = false;
-		pt.destroy = once(function() {
-			destroyed = true;
-			pt.emit('close');
-		});
+    mkdir(function(err) {
+      if (err) return proxy.destroy(err)
+      ropts.tries++
+      worker.write(ropts)
+    })
 
-		return pt;
-	};
+    proxy.on('close', function() { // gc yo
+      queued[ropts.id]
+    })
 
-	render.destroy = function(cb) {
-		var next = afterAll(cb);
-		pool.forEach(function(ps) {
-			ps.destroy(next());
-		});
-	};
+    return proxy
+  }
 
-	return render;
-};
+  return render
+}
+
+module.exports = create

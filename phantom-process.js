@@ -4,160 +4,153 @@
 var webpage = require('webpage');
 var system = require('system');
 var fs = require('fs');
- 
+
 var page = webpage.create();
- 
-var fifoFile = system.args[1];
-var platform = system.args[2];
-var inc = 0;
 
 var forcePrintMedia = function() {
-	page.evaluate(function() {
-		var findPrintMedia = function() {
-			var styles = [];
+  page.evaluate(function() {
+    var findPrintMedia = function() {
+      var styles = [];
 
-			Array.prototype.slice.call(document.querySelectorAll('style')).forEach(function(el) {
-				styles.push(el.innerText);
-			});
-			Array.prototype.slice.call(document.querySelectorAll('link')).forEach(function(el) {
-				if (el.rel && el.rel.indexOf('stylesheet') === -1) return;
+      Array.prototype.slice.call(document.querySelectorAll('style')).forEach(function(el) {
+        styles.push(el.innerText);
+      });
+      Array.prototype.slice.call(document.querySelectorAll('link')).forEach(function(el) {
+        if (el.rel && el.rel.indexOf('stylesheet') === -1) return;
 
-				try {
-					// try-catch is just precaution (we already set web-security to no)
+        try {
+          // try-catch is just precaution (we already set web-security to no)
 
-					var xhr = new XMLHttpRequest();
+          var xhr = new XMLHttpRequest();
 
-					// 99.99% of the cases we just hit the cache so no real io
-					xhr.open('GET', el.href, false);
-					xhr.send(null);
+          // 99.99% of the cases we just hit the cache so no real io
+          xhr.open('GET', el.href, false);
+          xhr.send(null);
 
-					styles.push(xhr.responseText);
-				} catch (err) {
-					// do nothing
-				}
-			});
+          styles.push(xhr.responseText);
+        } catch (err) {
+          // do nothing
+        }
+      });
 
-			var style = styles.join('\n');
+      var style = styles.join('\n');
 
-			return style.split('@media print').slice(1).filter(function(text) {
-				return text.indexOf('attr(href)') === -1;
-			}).map(function(text) {
-				var lvl = 0;
+      return style.split('@media print').slice(1).filter(function(text) {
+        return text.indexOf('attr(href)') === -1;
+      }).map(function(text) {
+        var lvl = 0;
 
-				var from = text.indexOf('{');
+        var from = text.indexOf('{');
 
-				for (var i = from; i < text.length; i++) {
-					if (text[i] === '{') lvl++;
-					if (text[i] === '}') lvl--;
-					if (lvl === 0) break;
-				}
+        for (var i = from; i < text.length; i++) {
+          if (text[i] === '{') lvl++;
+          if (text[i] === '}') lvl--;
+          if (lvl === 0) break;
+        }
 
-				return text.substring(from+1, i-1);
-			}).join('\n');
-		};
+        return text.substring(from+1, i-1);
+      }).join('\n');
+    };
 
-		var div = document.createElement('div');
+    var div = document.createElement('div');
 
-		div.innerHTML = '<style>\n'+findPrintMedia()+'\n</style>';
-		document.body.appendChild(div);
-		document.body.style.backgroundImage = 'none';
-		document.body.style.backgroundColor = 'white';
-	});
+    div.innerHTML = '<style>\n'+findPrintMedia()+'\n</style>';
+    document.body.appendChild(div);
+    document.body.style.backgroundImage = 'none';
+    document.body.style.backgroundColor = 'white';
+  });
 };
 
 var loop = function() {
-	var line = system.stdin.readLine();
-	if (!line.trim()) {
-		fs.remove(fifoFile);
-		return phantom.exit(0);
-	}
+  var line = system.stdin.readLine();
+  if (!line.trim()) return phantom.exit(0);
 
-	try {
-		line = JSON.parse(line);
-	} catch (err) {
-		fs.remove(fifoFile);
-		return process.exit(0);
-	}
+  try {
+    line = JSON.parse(line);
+  } catch (err) {
+    return phantom.exit(1);
+  }
 
-	if (!page) page = webpage.create();
+  if (!page) page = webpage.create();
 
-	page.viewportSize = {
-		width: line.width || 1280,
-		height: line.height || 960
-	};
+  page.viewportSize = {
+    width: line.width || 1280,
+    height: line.height || 960
+  };
 
-	page.paperSize = {
-		format: line.paperFormat || 'A4',
-		orientation: line.orientation || 'portrait',
-		margin: line.margin || '0cm'
-	};
+  page.paperSize = {
+    format: line.paperFormat || 'A4',
+    orientation: line.orientation || 'portrait',
+    margin: line.margin || '0cm'
+  };
 
-	if (line.userAgent) page.settings.userAgent = line.userAgent;
+  if (line.userAgent) page.settings.userAgent = line.userAgent;
 
-	if (line.crop) {
-		page.clipRect = {
-			width: line.crop.width || page.viewportSize.width,
-			height: line.crop.height || page.viewportSize.height,
-			top: line.crop.top || 0,
-			left: line.crop.left || 0
-		}
-	}
+  if (line.crop) {
+    page.clipRect = {
+      width: line.crop.width || page.viewportSize.width,
+      height: line.crop.height || page.viewportSize.height,
+      top: line.crop.top || 0,
+      left: line.crop.left || 0
+    }
+  }
 
-	page.open(line.url, function(requestStatus) {
-		var file = platform === 'win32' ? fifoFile+'-'+(inc++) : fifoFile;
-
+  page.open(line.url, function(requestStatus) {
     // If there's a failure, communicate that through the FIFO by writing just the "!" character.
-		if (requestStatus !== 'success') {
-			fs.write(file, '!', 'w');
-			page = null;
-			loop();
-			return;
-		}
+    if (requestStatus !== 'success') {
+      line.success = false;
+      console.log(JSON.stringify(line));
+      page = null;
+      loop();
+      return;
+    }
 
-		var render = function() {
-			setTimeout(function() {
-				if (line.printMedia) forcePrintMedia();
-				page.render(file, {format:line.format || 'png'});
-				page = null;
-				loop();
-			}, 0);
-		};
+    var render = function() {
+      setTimeout(function() {
+        if (line.printMedia) forcePrintMedia();
+        page.render(line.filename, {format:line.format || 'png'});
+        page = null;
+        line.success = true;
+        console.log(JSON.stringify(line));
+        loop();
+      }, 0);
+    };
 
-		var waitAndRender = function() {
-			var timeout = setTimeout(function() {
-				page.onAlert('webpage-renderable');
-			}, 10000);
+    var waitAndRender = function() {
+      var timeout = setTimeout(function() {
+        page.onAlert('webpage-renderable');
+      }, 10000);
 
-			var rendered = false;
-			page.onAlert = function(msg) {
-				if (rendered || msg !== 'webpage-renderable') return; 
-				rendered = true;
-				clearTimeout(timeout);
-				render();
-			};
+      var rendered = false;
+      page.onAlert = function(msg) {
+        if (rendered || msg !== 'webpage-renderable') return;
+        rendered = true;
+        clearTimeout(timeout);
+        render();
+      };
 
-			page.evaluate(function() {
-				if (window.renderable) return alert('webpage-renderable');
-				var renderable = false;
-				Object.defineProperty(window, 'renderable', {
-					get: function() {
-						return renderable;
-					},
-					set: function(val) {
-						renderable = val;
-						alert('webpage-renderable');
-					}
-				});
-			});
-		};
+      page.evaluate(function() {
+        if (window.renderable) return alert('webpage-renderable');
+        var renderable = false;
+        Object.defineProperty(window, 'renderable', {
+          get: function() {
+            return renderable;
+          },
+          set: function(val) {
+            renderable = val;
+            alert('webpage-renderable');
+          }
+        });
+      });
+    };
 
-		var renderable = page.evaluate(function() {
-			return window.renderable;
-		});
-		if (renderable === false) return waitAndRender();
-		render();
+    var renderable = page.evaluate(function() {
+      return window.renderable;
+    });
 
-	});
+    if (renderable === false) return waitAndRender();
+    render();
+  });
 };
 
 loop();
