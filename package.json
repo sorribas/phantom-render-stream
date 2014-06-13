@@ -5,7 +5,7 @@
   "repository": "e-conomic/phantom-render-stream",
   "dependencies": {
     "after-all": "~1.0.0",
-    "duplexer2": "0.0.2",
+    "duplexer": "^0.1.1",
     "fwd-stream": "^1.0.4",
     "hat": "0.0.3",
     "ldjson-stream": "0.0.1",
