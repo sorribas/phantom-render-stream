@@ -49,8 +49,8 @@ var spawn = function() {
   input.pipe(child.stdin)
 
   var onerror = once(function() {
-    child.kill();
-  });
+    child.kill()
+  })
 
   child.stdin.on('error', onerror);
   child.stdout.on('error', onerror);
@@ -59,6 +59,10 @@ var spawn = function() {
   var result = duplexer(input, output)
 
   result.process = child
+
+  result.destroy = function() {
+    child.kill()
+  }
 
   result.ref = function() {
     child.stdout.ref()
@@ -89,6 +93,7 @@ var pool = function(size, timeout) {
   for (var i = 0; i < size; i++) workers.push({queued:[], stream:null})
 
   var dup = new stream.Duplex({objectMode:true})
+  var interval
 
   var ontimeout = function() {
     var now = Date.now()
@@ -98,7 +103,10 @@ var pool = function(size, timeout) {
     }
   }
 
-  if (timeout) setInterval(ontimeout, 2000)
+  if (timeout) {
+    interval = setInterval(ontimeout, 2000)
+    interval.unref()
+  }
 
   var update = function() {
     for (var i = 0; i < workers.length; i++) {
@@ -143,6 +151,13 @@ var pool = function(size, timeout) {
     })
 
     return worker
+  }
+
+  dup.destroy = function() {
+    if (interval) clearInterval(interval)
+    workers.forEach(function(worker) {
+      if (worker.stream) worker.stream.destroy()
+    })
   }
 
   dup._write = function(data, enc, cb) {
@@ -218,6 +233,11 @@ var create = function(opts) {
     })
 
     return proxy
+  }
+
+  render.destroy = function(cb) {
+    worker.destroy()
+    if (cb) cb()
   }
 
   return render
