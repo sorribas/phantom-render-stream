@@ -30,8 +30,6 @@ var render = phantom({
 	format      : 'jpeg',      // the default output format
 	width       : 1280,        // changes the width size. default to 1280
 	height      : 800,         // changes the height size. default to 960
-	debug       : false,       // enable some more debugging. Defaults to false. More details in Troubleshooting section.
-	fifoDir     : '/some/path' // Where named pipes are stored. Defaults to `os.tmpDir()`
 	paperFormat : 'A4',        // defaults to A4. Also supported: 'A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid'.
 	orientation : 'portriat'   // defaults to portrait. 'landscape' is also valid
 	margin      : '0cm'        // defaults to 0cm. Supported dimension units are: 'mm', 'cm', 'in', 'px'. No unit means 'px'.
@@ -103,11 +101,6 @@ Here is an example to illustrate it better.
 </html>
 
 ```
-
-## OS Dependencies
-
-We use `mkfifo` which is known to exist and work on OS X and Linux, but may not work other plaforms,
-particularly Windows, which has different notions about named pipes.
 
 ## License
 
