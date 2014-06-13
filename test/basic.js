@@ -80,17 +80,3 @@ test('print media', function(host, t) {
 		t.end();
 	}));
 });
-
-test('fifo directory option', function(host, t) {
-	var render = phantom({fifoDir: process.cwd()});
-	render(host).pipe(concat(function(data) {
-		var reg = /phantom-queue\-.+/;
-
-		t.ok(data);
-		t.ok(data.length > 0);
-		t.ok(fs.readdirSync(process.cwd()).some(reg.test.bind(reg)));
-		render.destroy(function() {
-			t.end();
-		});
-	}));
-});
