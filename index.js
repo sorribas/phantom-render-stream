@@ -11,9 +11,12 @@ var xtend = require('xtend');
 var hat = require('hat');
 var path = require('path');
 var util = require('util');
+var os = require('os');
 var phantomjsPath = require('phantomjs').path;
 
 var noop = function() {};
+
+var TMP = path.join(fs.existsSync('/tmp') ? '/tmp' : os.tmpDir(), 'phantom-render-stream');
 
 var Proxy = function() {
   stream.Transform.call(this);
@@ -181,7 +184,7 @@ var create = function(opts) {
   var renderTimeout = opts.timeout;
   var poolSize = opts.pool || 1;
   var retries = opts.retries || 1;
-  var tmp = opts.tmp || '/tmp/phantom-render-stream';
+  var tmp = opts.tmp || TMP;
   var format = opts.format || 'png';
 
   var worker = pool(poolSize, renderTimeout);
