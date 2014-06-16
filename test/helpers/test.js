@@ -16,6 +16,10 @@ module.exports = function(msg, fn) {
 
 			server = http.createServer(function(req, res) {
 				req.connection.unref();
+				if (req.url.indexOf('expects') > -1) {
+					res.end('<html><body>hello</body><script>window.renderable = "lols"</script></body></html>');
+					return;
+				}
 				res.end('hello world\n');
 			});
 			server.listen(0, function() {
