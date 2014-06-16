@@ -132,8 +132,10 @@ var loop = function() {
         else onerror();
       };
 
-      page.evaluate(function() {
-        if (window.renderable) return alert('webpage-renderable');
+      page.evaluate(function(expects) {
+        if (window.renderable === expects) return alert('webpage-renderable');
+        if (window.renderable) return alert('webpage-error');
+
         var renderable = false;
         Object.defineProperty(window, 'renderable', {
           get: function() {
@@ -141,18 +143,18 @@ var loop = function() {
           },
           set: function(val) {
             renderable = val;
-            if (renderable === line.expects) alert('webpage-renderable');
+            if (renderable === expects) alert('webpage-renderable');
             else alert('webpage-error');
           }
         });
-      });
+      }, line.expects);
     };
 
     var renderable = page.evaluate(function() {
       return window.renderable;
     });
 
-    if (renderable === false && !line.expects) line.expects = true
+    if (renderable === false && !line.expects) line.expects = true;
     if (line.expects === renderable) return render();
     if (line.expects) return waitAndRender();
     render();
