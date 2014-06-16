@@ -95,15 +95,15 @@ var loop = function() {
     }
   }
 
+  var onerror = function() {
+    line.success = false;
+    console.log(JSON.stringify(line));
+    page = null;
+    loop();
+  }
+
   page.open(line.url, function(requestStatus) {
-    // If there's a failure, communicate that through the FIFO by writing just the "!" character.
-    if (requestStatus !== 'success') {
-      line.success = false;
-      console.log(JSON.stringify(line));
-      page = null;
-      loop();
-      return;
-    }
+    if (requestStatus !== 'success') return onerror();
 
     var render = function() {
       setTimeout(function() {
@@ -118,15 +118,18 @@ var loop = function() {
 
     var waitAndRender = function() {
       var timeout = setTimeout(function() {
-        page.onAlert('webpage-renderable');
+        page.onAlert('webpage-error');
       }, 10000);
 
       var rendered = false;
       page.onAlert = function(msg) {
-        if (rendered || msg !== 'webpage-renderable') return;
+        if (msg !== 'webpage-renderable' && msg !== 'webpage-error') return;
+        if (rendered) return;
         rendered = true;
         clearTimeout(timeout);
-        render();
+
+        if (msg === 'webpage-renderable') render();
+        else onerror();
       };
 
       page.evaluate(function() {
@@ -138,7 +141,8 @@ var loop = function() {
           },
           set: function(val) {
             renderable = val;
-            alert('webpage-renderable');
+            if (renderable === line.expects) alert('webpage-renderable');
+            else alert('webpage-error');
           }
         });
       });
@@ -148,7 +152,8 @@ var loop = function() {
       return window.renderable;
     });
 
-    if (renderable === false) return waitAndRender();
+    if (renderable === false && !line.expects) line.expects = true
+    if (line.expects) return waitAndRender();
     render();
   });
 };
