@@ -98,7 +98,7 @@ var pool = function(size, timeout) {
   var ontimeout = function() {
     var now = Date.now()
     for (var i = 0; i < workers.length; i++) {
-      var sent = workers.queued.length && workers.queued[0].sent
+      var sent = workers[i].queued.length && workers[i].queued.sent
       if (sent && (now - sent) > timeout) workers.stream.process.kill()
     }
   }
