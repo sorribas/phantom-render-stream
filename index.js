@@ -229,7 +229,7 @@ var create = function(opts) {
     })
 
     proxy.on('close', function() { // gc yo
-      queued[ropts.id]
+      delete queued[ropts.id]
     })
 
     return proxy
