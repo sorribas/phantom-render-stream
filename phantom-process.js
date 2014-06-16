@@ -153,6 +153,7 @@ var loop = function() {
     });
 
     if (renderable === false && !line.expects) line.expects = true
+    if (line.expects === renderable) return render();
     if (line.expects) return waitAndRender();
     render();
   });
