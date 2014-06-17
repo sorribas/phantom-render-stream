@@ -13,6 +13,7 @@ var path = require('path');
 var util = require('util');
 var os = require('os');
 var debugStream = require('debug-stream');
+var debug = require('debug')('phantom-render-stream');
 var phantomjsPath = require('phantomjs').path;
 
 var noop = function() {};
@@ -49,9 +50,8 @@ var spawn = function() {
   var input = ldjson.serialize();
   var output = ldjson.parse();
 
-  child.stdout.pipe(output);
-  input.pipe(child.stdin);
-  child.stdout.pipe(debugStream('phantom-render-stream'));
+  child.stdout.pipe(debugStream(debug, 'stdout')).pipe(output);
+  input.pipe(debugStream(debug, 'stdin')).pipe(child.stdin);
 
   var onerror = once(function() {
     child.kill();
