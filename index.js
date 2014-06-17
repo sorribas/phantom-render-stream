@@ -42,7 +42,7 @@ Proxy.prototype.destroy = function(err) {
   this.emit('close');
 };
 
-var spawn = function() {
+var spawn = function(debug) {
   var child = proc.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js')]);
 
   var input = ldjson.serialize();
@@ -50,6 +50,7 @@ var spawn = function() {
 
   child.stdout.pipe(output);
   input.pipe(child.stdin);
+  if (debug) child.stdout.pipe(process.stdout);
 
   var onerror = once(function() {
     child.kill();
@@ -91,7 +92,7 @@ var spawn = function() {
   return result;
 };
 
-var pool = function(size, timeout) {
+var pool = function(size, timeout, debug) {
   var workers = [];
   for (var i = 0; i < size; i++) workers.push({queued:[], stream:null});
 
@@ -126,7 +127,7 @@ var pool = function(size, timeout) {
 
     if (worker.stream) return worker;
 
-    worker.stream = spawn();
+    worker.stream = spawn(debug);
 
     worker.stream.on('close', function() {
       var queued = worker.queued;
@@ -187,7 +188,7 @@ var create = function(opts) {
   var tmp = opts.tmp || TMP;
   var format = opts.format || 'png';
 
-  var worker = pool(poolSize, renderTimeout);
+  var worker = pool(poolSize, renderTimeout, opts.debug);
   var queued = {};
 
   worker.on('data', function(data) {
