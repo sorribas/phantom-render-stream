@@ -19,6 +19,8 @@ var noop = function() {};
 
 var TMP = path.join(fs.existsSync('/tmp') ? '/tmp' : os.tmpDir(), 'phantom-render-stream');
 
+var phantomProcessFlags = [];
+
 var Proxy = function() {
   stream.Transform.call(this);
   this.bytesRead = 0;
@@ -44,7 +46,8 @@ Proxy.prototype.destroy = function(err) {
 };
 
 var spawn = function() {
-  var child = proc.spawn(phantomjsPath, [path.join(__dirname, 'phantom-process.js')]);
+  var phantomjsArgs = phantomProcessFlags.concat(path.join(__dirname, 'phantom-process.js'));
+  var child = proc.spawn(phantomjsPath, phantomjsArgs);
 
   var input = ldjson.serialize();
   var output = ldjson.parse();
@@ -187,6 +190,7 @@ var create = function(opts) {
   var retries = opts.retries || 1;
   var tmp = opts.tmp || TMP;
   var format = opts.format || 'png';
+  phantomProcessFlags = opts.phantomFlags || [];
 
   var worker = pool(poolSize, renderTimeout);
   var queued = {};

@@ -40,7 +40,8 @@ var render = phantom({
   userAgent   : '',          // No default.
   crop        : false,       // Defaults to false. Set to true or {top:5, left:5} to add margin
   printMedia  : false,       // Defaults to false. Force the use of a print stylesheet.
-  expects     : 'something'  // No default. Do not render until window.renderable is set to 'something'
+  expects     : 'something', // No default. Do not render until window.renderable is set to 'something'
+  phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to phantomjs 
 });
 ```
 
