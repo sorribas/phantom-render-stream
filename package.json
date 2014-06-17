@@ -5,6 +5,7 @@
   "repository": "e-conomic/phantom-render-stream",
   "dependencies": {
     "after-all": "~1.0.0",
+    "debug-stream": "^1.0.0",
     "duplexer": "^0.1.1",
     "fwd-stream": "^1.0.4",
     "hat": "0.0.3",
