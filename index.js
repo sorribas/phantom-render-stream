@@ -50,7 +50,7 @@ var spawn = function() {
   var child = proc.spawn(phantomjsPath, phantomjsArgs);
 
   var input = ldjson.serialize();
-  var output = ldjson.parse();
+  var output = ldjson.parse({strict: false});
 
   child.stdout.pipe(debugStream('stdout')).pipe(output);
   input.pipe(debugStream('stdin')).pipe(child.stdin);
