@@ -109,8 +109,9 @@ var pool = function(opts) {
   var ontimeout = function() {
     var now = Date.now();
     for (var i = 0; i < workers.length; i++) {
-      var sent = workers[i].queued.length && workers[i].queued.sent;
-      if (sent && (now - sent) > timeout) workers.stream.process.kill();
+      var worker = workers[i];
+      var sent = worker.queued.length && worker.queued[0].sent;
+      if (sent && (now - sent) > timeout) worker.stream.process.kill();
     }
   };
 
@@ -197,6 +198,7 @@ var create = function(opts) {
   opts.pool = opts.pool || 1;
   opts.maxErrors = typeof opts.maxErrors === 'number' ? opts.maxErrors : 3;
   opts.phantomFlags = opts.phantomFlags || [];
+  opts.timeout = opts.timeout !== false ? opts.timeout || 30000 : 0;
 
   var retries = opts.retries || 1;
   var tmp = opts.tmp || TMP;

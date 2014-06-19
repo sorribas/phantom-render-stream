@@ -83,17 +83,25 @@ test('print media', function(host, t) {
 
 test('expects', function(host, t) {
   var render = phantom();
-  render(host+'/?expects', {expects:'lols'}).pipe(concat(function(data) {
+  render(host +'/?expects', {expects:'lols'}).pipe(concat(function(data) {
     t.ok(data);
     t.ok(data.length > 0);
     t.end();
-  }))
-})
+  }));
+});
 
 test('expects fail', function(host, t) {
   var render = phantom();
-  render(host+'/?expects', {expects:'meh'}).on('error', function(err) {
+  render(host +'/?expects', {expects:'meh'}).on('error', function(err) {
     t.ok(err);
     t.end();
   });
-})
+});
+
+test('timeout', function(host, t) {
+  var render = phantom({timeout: 100});
+  render(host + '/?timeout').on('error', function(err) {
+    t.ok(err);
+    t.end();
+  });
+});

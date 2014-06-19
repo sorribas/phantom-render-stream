@@ -20,6 +20,9 @@ module.exports = function(msg, fn) {
           res.end('<html><body>hello</body><script>window.renderable = "lols"</script></body></html>');
           return;
         }
+        if (req.url.indexOf('timeout') > -1) {
+          return; // do nothing...
+        }
         res.end('hello world\n');
       });
       server.listen(0, function() {
