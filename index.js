@@ -96,37 +96,38 @@ var spawn = function(opts) {
   return result;
 };
 
+var noop = function() {};
+
 var pool = function(opts) {
   var size = opts.pool;
   var timeout = opts.timeout;
   var maxErrors = opts.maxErrors;
+
   var workers = [];
-  for (var i = 0; i < size; i++) workers.push({queued:[], stream:null, errors:0});
+  for (var i = 0; i < size; i++) workers.push({timeout:null, queued:[], stream:null, errors:0, kill:noop});
 
   var dup = new stream.Duplex({objectMode:true});
-  var interval;
 
-  var ontimeout = function() {
-    var now = Date.now();
-    for (var i = 0; i < workers.length; i++) {
-      var worker = workers[i];
-      var sent = worker.queued.length && worker.queued[0].sent;
-      if (sent && (now - sent) > timeout) worker.stream.process.kill();
+  var updateTimeout = function(worker) {
+    if (!timeout) return;
+    if (!worker.queued.length && worker.timeout) {
+      clearTimeout(worker.timeout);
+      worker.timeout = null;
+    } else if (worker.queued.length && !worker.timeout) {
+      worker.timeout = setTimeout(worker.kill, timeout);
     }
   };
 
-  if (timeout) {
-    interval = setInterval(ontimeout, 2000);
-    interval.unref();
+  var updateReferences = function(worker) {
+    if (!worker.stream) return;
+    if (worker.queued.length) worker.stream.ref();
+    else worker.stream.unref();
+  };
+
+  var update = function(worker) {
+    updateTimeout(worker);
+    updateReferences(worker);
   }
-
-  var update = function() {
-    for (var i = 0; i < workers.length; i++) {
-      if (!workers[i].stream) continue;
-      if (workers[i].queued.length) workers[i].stream.ref();
-      else workers[i].stream.unref();
-    }
-  };
 
   var select = function() {
     var worker = workers.reduce(function(a,b) {
@@ -136,6 +137,7 @@ var pool = function(opts) {
     if (worker.stream) return worker;
 
     worker.stream = spawn(opts);
+    worker.kill = worker.stream.process.kill.bind(worker.stream.process);
 
     worker.stream.on('close', function() {
       var queued = worker.queued;
@@ -148,6 +150,8 @@ var pool = function(opts) {
         data.success = false;
         dup.push(data);
       });
+
+      update(worker);
     });
 
     worker.stream.on('data', function(data) {
@@ -159,7 +163,7 @@ var pool = function(opts) {
         var cand = worker.queued[i];
         if (cand.id === data.id) {
           worker.queued.splice(i, 1);
-          update();
+          update(worker);
           break;
         }
       }
@@ -171,7 +175,6 @@ var pool = function(opts) {
   };
 
   dup.destroy = function() {
-    if (interval) clearInterval(interval);
     workers.forEach(function(worker) {
       if (worker.stream) worker.stream.destroy();
     });
@@ -181,7 +184,7 @@ var pool = function(opts) {
     var worker = select();
     worker.queued.push(data);
     worker.stream.write(data);
-    update();
+    update(worker);
     cb();
   };
 
