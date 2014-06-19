@@ -1,6 +1,6 @@
 {
   "name": "phantom-render-stream",
-  "version": "0.8.8",
+  "version": "1.0.0",
   "description": "Render a webpage and get the image as a stream",
   "repository": "e-conomic/phantom-render-stream",
   "dependencies": {
