@@ -12,7 +12,8 @@ var hat = require('hat');
 var path = require('path');
 var util = require('util');
 var os = require('os');
-var debugStream = require('debug-stream')('phantom-render-stream');
+var debug = require('debug')('phantom-render-stream');
+var debugStream = require('debug-stream')(debug);
 var phantomjsPath = require('phantomjs').path;
 
 var noop = function() {};
@@ -46,12 +47,13 @@ Proxy.prototype.destroy = function(err) {
 var spawn = function(opts) {
   var phantomjsArgs = opts.phantomFlags.concat(path.join(__dirname, 'phantom-process.js'));
   var child = proc.spawn(phantomjsPath, phantomjsArgs);
+  debug('phantom (%s) spawned', child.pid);
 
   var input = ldjson.serialize();
   var output = ldjson.parse({strict: false});
 
-  child.stdout.pipe(debugStream('stdout')).pipe(output);
-  input.pipe(debugStream('stdin')).pipe(child.stdin);
+  child.stdout.pipe(debugStream('phantom (%s) stdout', child.pid)).pipe(output);
+  input.pipe(debugStream('phantom (%s) stdin', child.pid)).pipe(child.stdin);
 
   var onerror = once(function() {
     child.kill();
@@ -84,6 +86,7 @@ var spawn = function(opts) {
   };
 
   var onclose = once(function() {
+    debug('phantom (%s) died', child.pid);
     result.emit('close');
   });
 
@@ -150,7 +153,7 @@ var pool = function(opts) {
       if (!data.success) worker.errors++;
       else worker.errors = 0;
 
-      if (worker.errors > maxErrors) worker.destroy();
+      if (worker.errors > maxErrors) worker.stream.destroy();
       for (var i = 0; i < worker.queued.length; i++) {
         var cand = worker.queued[i];
         if (cand.id === data.id) {
@@ -192,7 +195,7 @@ var create = function(opts) {
   if (!opts) opts = {};
 
   opts.pool = opts.pool || 1;
-  opts.maxErrors = opts.maxErrors || 3;
+  opts.maxErrors = typeof opts.maxErrors === 'number' ? opts.maxErrors : 3;
   opts.phantomFlags = opts.phantomFlags || [];
 
   var retries = opts.retries || 1;
@@ -216,7 +219,10 @@ var create = function(opts) {
     }
 
     delete queued[data.id];
-    if (!data.success) return proxy.destroy(new Error('Render failed ('+data.tries+' tries)'));
+    if (!data.success) {
+      fs.unlink(data.filename, noop);
+      return proxy.destroy(new Error('Render failed ('+data.tries+' tries)'));
+    }
 
     pump(fs.createReadStream(data.filename), proxy, function() {
       fs.unlink(data.filename, noop);
@@ -229,7 +235,7 @@ var create = function(opts) {
 
   var render = function(url, ropts) {
     ropts = xtend({format:format, url:url, printMedia: opts.printMedia}, ropts);
-    ropts.filename = path.join(tmp, hat()) + '.' + ropts.format;
+    ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
     ropts.id = hat();
     ropts.sent = Date.now();
     ropts.tries = 0;
