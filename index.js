@@ -95,9 +95,9 @@ var spawn = function() {
   return result;
 };
 
-var pool = function(size, timeout) {
+var pool = function(size, timeout, maxErrors) {
   var workers = [];
-  for (var i = 0; i < size; i++) workers.push({queued:[], stream:null});
+  for (var i = 0; i < size; i++) workers.push({queued:[], stream:null, errors:0});
 
   var dup = new stream.Duplex({objectMode:true});
   var interval;
@@ -136,6 +136,7 @@ var pool = function(size, timeout) {
       var queued = worker.queued;
       worker.queued = [];
       worker.stream = null;
+      worker.errors = 0;
 
       // emit all data as success=false
       queued.forEach(function(data) {
@@ -145,6 +146,10 @@ var pool = function(size, timeout) {
     });
 
     worker.stream.on('data', function(data) {
+      if (!data.success) worker.errors++;
+      else worker.errors = 0;
+
+      if (worker.errors > maxErrors) worker.destroy();
       for (var i = 0; i < worker.queued.length; i++) {
         var cand = worker.queued[i];
         if (cand.id === data.id) {
@@ -190,9 +195,10 @@ var create = function(opts) {
   var retries = opts.retries || 1;
   var tmp = opts.tmp || TMP;
   var format = opts.format || 'png';
+  var maxErrors = opts.maxErrors || 3;
   phantomProcessFlags = opts.phantomFlags || [];
 
-  var worker = pool(poolSize, renderTimeout);
+  var worker = pool(poolSize, renderTimeout, opts.ma);
   var queued = {};
 
   worker.on('data', function(data) {
