@@ -19,8 +19,6 @@ var noop = function() {};
 
 var TMP = path.join(fs.existsSync('/tmp') ? '/tmp' : os.tmpDir(), 'phantom-render-stream');
 
-var phantomProcessFlags = [];
-
 var Proxy = function() {
   stream.Transform.call(this);
   this.bytesRead = 0;
@@ -45,8 +43,8 @@ Proxy.prototype.destroy = function(err) {
   this.emit('close');
 };
 
-var spawn = function() {
-  var phantomjsArgs = phantomProcessFlags.concat(path.join(__dirname, 'phantom-process.js'));
+var spawn = function(opts) {
+  var phantomjsArgs = opts.phantomFlags.concat(path.join(__dirname, 'phantom-process.js'));
   var child = proc.spawn(phantomjsPath, phantomjsArgs);
 
   var input = ldjson.serialize();
@@ -95,7 +93,10 @@ var spawn = function() {
   return result;
 };
 
-var pool = function(size, timeout, maxErrors) {
+var pool = function(opts) {
+  var size = opts.pool;
+  var timeout = opts.timeout;
+  var maxErrors = opts.maxErrors;
   var workers = [];
   for (var i = 0; i < size; i++) workers.push({queued:[], stream:null, errors:0});
 
@@ -130,7 +131,7 @@ var pool = function(size, timeout, maxErrors) {
 
     if (worker.stream) return worker;
 
-    worker.stream = spawn();
+    worker.stream = spawn(opts);
 
     worker.stream.on('close', function() {
       var queued = worker.queued;
@@ -190,15 +191,15 @@ var pool = function(size, timeout, maxErrors) {
 var create = function(opts) {
   if (!opts) opts = {};
 
-  var renderTimeout = opts.timeout;
-  var poolSize = opts.pool || 1;
+  opts.pool = opts.pool || 1;
+  opts.maxErrors = opts.maxErrors || 3;
+  opts.phantomFlags = opts.phantomFlags || [];
+
   var retries = opts.retries || 1;
   var tmp = opts.tmp || TMP;
   var format = opts.format || 'png';
-  var maxErrors = opts.maxErrors || 3;
-  phantomProcessFlags = opts.phantomFlags || [];
 
-  var worker = pool(poolSize, renderTimeout, opts.ma);
+  var worker = pool(opts);
   var queued = {};
 
   worker.on('data', function(data) {
