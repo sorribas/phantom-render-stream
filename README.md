@@ -109,6 +109,19 @@ Here is an example to illustrate it better.
 </html>
 ```
 
+## Troubleshooting
+
+Some additional debugging output may be enabled by running your script with a
+`DEBUG` environment variable set as follows:
+
+    DEBUG=phantom-render-stream  node ./your-script.js
+
+If you are getting undefined error codes and responses when attempting to
+render, it's likely a connection issue of some sort. If the URL uses SSL,
+adding `--ignore-ssl-errors=true` to phantomFlags may help. You also try adding
+`--debug=true` to the `phantomFlags` array.
+
+
 ## See Also
 
  * [wkhtmltopdf](https://www.npmjs.org/package/wkhtmltopdf) is a Node module that uses [wkhtmltopdf](http://wkhtmltopdf.org/) to convert HTML to PDF. It is similar in that it uses Webkit and produces output as a stream, and different in that it doesn't use PhantomJS. Also, `wkhtmotopdf` only supports PDF output.
