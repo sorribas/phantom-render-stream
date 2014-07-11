@@ -31,6 +31,7 @@ var render = phantom({
   pool        : 5,           // Change the pool size. Defaults to 1
   timeout     : 1000,        // Set a render timeout. No default
   tmp         : '/tmp',      // Set the tmp where tmp data is stored when communicating with the phantom process.
+                             //   Defaults to /tmp if it exists, or os.tmpDir()
   format      : 'jpeg',      // The default output format. Defaults to png
   width       : 1280,        // Changes the width size. Defaults to 1280
   height      : 800,         // Changes the height size. Defaults to 960
@@ -40,8 +41,10 @@ var render = phantom({
   userAgent   : '',          // No default.
   crop        : false,       // Defaults to false. Set to true or {top:5, left:5} to add margin
   printMedia  : false,       // Defaults to false. Force the use of a print stylesheet.
+  maxErrors   : 3,           // Number errors phantom process is allowed to throw before killing it. Defaults to 3.
   expects     : 'something', // No default. Do not render until window.renderable is set to 'something'
   phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to phantomjs 
+
 });
 ```
 
