@@ -106,6 +106,10 @@ Here is an example to illustrate it better.
 </html>
 ```
 
+## See Also
+
+ * [wkhtmltopdf](https://www.npmjs.org/package/wkhtmltopdf) is a Node module that uses [wkhtmltopdf](http://wkhtmltopdf.org/) to convert HTML to PDF. It is similar in that it uses Webkit and produces output as a stream, and different in that it doesn't use PhantomJS. Also, `wkhtmotopdf` only supports PDF output.
+
 ## License
 
 [MIT](http://opensource.org/licenses/MIT)
