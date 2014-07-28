@@ -211,7 +211,6 @@ var create = function(opts) {
   opts = xtend(defaultOpts,opts);
 
   var tmp     = opts.tmp;
-  var format  = opts.format;
 
   var worker = pool(opts);
   var queued = {};
@@ -245,7 +244,7 @@ var create = function(opts) {
   });
 
   var render = function(url, ropts) {
-    ropts = xtend({format:format, url:url, printMedia: opts.printMedia}, ropts);
+    ropts = xtend({format:opts.format, url:url, printMedia: opts.printMedia}, ropts);
     ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
     ropts.id = hat();
     ropts.sent = Date.now();
