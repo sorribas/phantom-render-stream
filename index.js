@@ -210,7 +210,6 @@ var create = function(opts) {
 
   opts = xtend(defaultOpts,opts);
 
-  var retries = opts.retries;
   var tmp     = opts.tmp;
   var format  = opts.format;
 
@@ -222,7 +221,7 @@ var create = function(opts) {
     var proxy = queued[data.id];
     if (!proxy) return;
 
-    if (!data.success && data.tries < retries) {
+    if (!data.success && data.tries < opts.retries) {
       fs.unlink(data.filename, noop);
       data.tries++;
       data.filename = path.join(tmp, hat()) + '.' + data.format;
