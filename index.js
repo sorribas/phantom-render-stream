@@ -208,8 +208,6 @@ var create = function(opts) {
 
   opts = xtend(defaultOpts,opts);
 
-  var tmp     = opts.tmp;
-
   var worker = pool(opts);
   var queued = {};
 
@@ -221,7 +219,7 @@ var create = function(opts) {
     if (!data.success && data.tries < opts.retries) {
       fs.unlink(data.filename, noop);
       data.tries++;
-      data.filename = path.join(tmp, hat()) + '.' + data.format;
+      data.filename = _getTmpFile(opts.tmp,data.format);
       data.sent = Date.now();
       return worker.write(data);
     }
@@ -238,15 +236,17 @@ var create = function(opts) {
   });
 
   var mkdir = thunky(function(cb) {
-    mkdirp(tmp, cb);
+    mkdirp(opts.tmp, cb);
   });
 
   var render = function(url, ropts) {
     ropts = xtend({format:opts.format, url:url, printMedia: opts.printMedia}, ropts);
-    ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
+    ropts.filename = _getTmpFile(opts.tmp,ropts.format);
     ropts.id = hat();
     ropts.sent = Date.now();
     ropts.tries = 0;
+
+
     if (ropts.crop === true) ropts.crop = {top:0, left:0};
 
     var proxy = queued[ropts.id] = new Proxy();
@@ -271,5 +271,9 @@ var create = function(opts) {
 
   return render;
 };
+
+function _getTmpFile (tmpDir,format) {
+  return path.join(tmpDir, process.pid + '.' + hat()) + '.' + format;
+}
 
 module.exports = create;
