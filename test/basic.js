@@ -80,7 +80,7 @@ test('print media', function(host, t) {
   }));
 });
 
-test('expects', function(host, t) {
+test('expects, with option passed to render()', function(host, t) {
   var render = phantom();
   render(host +'/?expects', {expects:'lols'}).pipe(concat(function(data) {
     t.ok(data);
@@ -89,9 +89,26 @@ test('expects', function(host, t) {
   }));
 });
 
-test('expects fail', function(host, t) {
+test('expects failure case, with option passed to render()', function(host, t) {
   var render = phantom();
   render(host +'/?expects', {expects:'meh'}).on('error', function(err) {
+    t.ok(err);
+    t.end();
+  });
+});
+
+test('expects, with option passed to phantom()', function(host, t) {
+  var render = phantom({expects:'lols'});
+  render(host +'/?expects').pipe(concat(function(data) {
+    t.ok(data);
+    t.ok(data.length > 0);
+    t.end();
+  }));
+});
+
+test('expects failure case, with options passed to phantom()', function(host, t) {
+  var render = phantom({expects:'meh'});
+  render(host +'/?expects').on('error', function(err) {
     t.ok(err);
     t.end();
   });
