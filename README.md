@@ -29,7 +29,7 @@ You can also pass some options:
 ``` js
 var render = phantom({
   pool        : 5,           // Change the pool size. Defaults to 1
-  timeout     : 1000,        // Set a render timeout. No default
+  timeout     : 1000,        // Set a render timeout in milliseconds. Defaults to 30 seconds.
   tmp         : '/tmp',      // Set the tmp where tmp data is stored when communicating with the phantom process.
                              //   Defaults to /tmp if it exists, or os.tmpDir()
   format      : 'jpeg',      // The default output format. Defaults to png
