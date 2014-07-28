@@ -240,7 +240,12 @@ var create = function(opts) {
   });
 
   var render = function(url, ropts) {
-    ropts = xtend({format:opts.format, url:url, printMedia: opts.printMedia}, ropts);
+    ropts = xtend({
+      url        : url,
+      format     : opts.format,
+      printMedia : opts.printMedia,
+      expects    : opts.expects,
+    }, ropts);
     ropts.filename = _getTmpFile(opts.tmp,ropts.format);
     ropts.id = hat();
     ropts.sent = Date.now();
