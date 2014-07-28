@@ -243,9 +243,6 @@ var create = function(opts) {
   opts = xtend(defaultOpts,opts);
 
   var tmp     = opts.tmp;
-  var format  = opts.format;
-  var quality = opts.quality;
-
   var worker = pool(opts);
   var server = serve();
   var queued = {};
@@ -280,31 +277,21 @@ var create = function(opts) {
   });
 
   var render = function(url, ropts) {
-    if(typeof url !== 'string') {
-      ropts = url;
-      url = null;
-    }
+    ropts = xtend({format:opts.format, quality:opts.quality, url:url, printMedia: opts.printMedia}, ropts);
+    ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
+    ropts.sent = Date.now();
+    ropts.tries = 0;
+    ropts.injectJs = opts.injectJs || [];
+    if (ropts.crop === true) ropts.crop = {top:0, left:0};
 
     var id = hat();
     var proxy = queued[id] = duplexify();
 
-    var initialize = function(url) {
-      ropts = xtend({format:format, quality:quality, url:url, printMedia: opts.printMedia}, ropts);
-      ropts.maxRenders = opts.maxRenders;
-      ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
-      ropts.id = id;
-      ropts.sent = Date.now();
-      ropts.tries = 0;
-      if (ropts.crop === true) ropts.crop = {top:0, left:0};
-
-      ropts.injectJs = opts.injectJs || [];
-
-      mkdir(function(err) {
-        if (err) return proxy.destroy(err);
-        ropts.tries++;
-        worker.write(ropts);
-      });
-    };
+    mkdir(function(err) {
+      if (err) return proxy.destroy(err);
+      ropts.tries++;
+      worker.write(ropts);
+    });
 
     proxy.on('close', function() { // gc yo
       delete queued[id];
