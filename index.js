@@ -235,7 +235,7 @@ var create = function(opts) {
     retries      : 1,
     tmp          : TMP,
     format       : 'png',
-    quality       : 100
+    quality      : 100
   };
 
   opts = xtend(defaultOpts,opts);
@@ -274,7 +274,13 @@ var create = function(opts) {
   });
 
   var render = function(url, ropts) {
-    ropts = xtend({format:opts.format, quality:opts.quality, url:url, printMedia: opts.printMedia}, ropts);
+    ropts = xtend({
+      url        : url,
+      quality:opts.quality,
+      format     : opts.format,
+      printMedia : opts.printMedia,
+      expects    : opts.expects,
+    }, ropts);
     ropts.filename = _getTmpFile(opts.tmp,ropts.format);
     ropts.id = hat();
     ropts.sent = Date.now();
