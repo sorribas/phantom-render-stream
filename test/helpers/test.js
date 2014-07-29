@@ -16,6 +16,11 @@ module.exports = function(msg, fn) {
 
       server = http.createServer(function(req, res) {
         req.connection.unref();
+        if (req.url.indexOf('slow-expects') > -1) {
+            // The expected test appears slow. Tests a bug where a hardcoded timeout was preventing slow renders from succeeding.
+            res.end('<html><head><script>window.renderable = false;setTimeout(function () { window.renderable="lols"; },12000);</script></head><body>hello</body></html>');
+          return;
+        }
         if (req.url.indexOf('expects') > -1) {
           res.end('<html><head><script>window.renderable = "lols"</script></head><body>hello</body></html>');
           return;
