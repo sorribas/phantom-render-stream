@@ -18,7 +18,7 @@ module.exports = function(msg, fn) {
         req.connection.unref();
         if (req.url.indexOf('slow-expects') > -1) {
             // The expected test appears slow. Tests a bug where a hardcoded timeout was preventing slow renders from succeeding.
-            res.end('<html><head><script>window.renderable = false;setTimeout(function () { window.renderable="lols"; },12000);</script></head><body>hello</body></html>');
+            res.end('<html><head><script>window.renderable = false;setTimeout(function () { window.renderable="lols"; },2000);</script></head><body>hello</body></html>');
           return;
         }
         if (req.url.indexOf('expects') > -1) {
