@@ -198,14 +198,21 @@ var pool = function(opts) {
 var create = function(opts) {
   if (!opts) opts = {};
 
-  opts.pool = opts.pool || 1;
-  opts.maxErrors = typeof opts.maxErrors === 'number' ? opts.maxErrors : 3;
-  opts.phantomFlags = opts.phantomFlags || [];
-  opts.timeout = opts.timeout !== false ? opts.timeout || 30000 : 0;
+  var defaultOpts = {
+    pool         : 1,
+    maxErrors    : 3,
+    phantomFlags : [],
+    timeout      : 30000,
+    retries      : 1,
+    tmp          : TMP,
+    format       : 'png',
+  };
 
-  var retries = opts.retries || 1;
-  var tmp = opts.tmp || TMP;
-  var format = opts.format || 'png';
+  opts = xtend(defaultOpts,opts);
+
+  var retries = opts.retries;
+  var tmp     = opts.tmp;
+  var format  = opts.format;
 
   var worker = pool(opts);
   var queued = {};
