@@ -114,6 +114,18 @@ test('expects failure case, with options passed to phantom()', function(host, t)
   });
 });
 
+
+test('expects with window.renderable appearing before timeout should work', function (host,t) {
+  var render = phantom({expects:'lols', timeout:30000});
+  render(host +'/?slow-expects').pipe(concat(function(data) {
+    t.ok(data);
+    t.ok(data.length > 0);
+    t.end();
+  }));
+});
+
+
+
 test('timeout', function(host, t) {
   var render = phantom({timeout: 100});
   render(host + '/?timeout').on('error', function(err) {
