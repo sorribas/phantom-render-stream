@@ -280,6 +280,7 @@ var create = function(opts) {
       format     : opts.format,
       printMedia : opts.printMedia,
       expects    : opts.expects,
+      timeout    : opts.timeout
     }, ropts);
     ropts.filename = _getTmpFile(opts.tmp,ropts.format);
     ropts.id = hat();
