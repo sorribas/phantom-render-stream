@@ -1,4 +1,5 @@
 
+  * 'retries' option is now documented (Mark Stosberg)
   * Add "Troubleshooting" and "See Also" sections to README.md (Mark Stosberg)
   * Add HISTORY.md file (Mark Stosberg)
   * default value of 'tmp' is now documented (Mark Stosberg)
