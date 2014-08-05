@@ -196,8 +196,6 @@ var pool = function(opts) {
 };
 
 var create = function(opts) {
-  if (!opts) opts = {};
-
   var defaultOpts = {
     pool         : 1,
     maxErrors    : 3,
@@ -210,10 +208,6 @@ var create = function(opts) {
 
   opts = xtend(defaultOpts,opts);
 
-  var retries = opts.retries;
-  var tmp     = opts.tmp;
-  var format  = opts.format;
-
   var worker = pool(opts);
   var queued = {};
 
@@ -222,10 +216,10 @@ var create = function(opts) {
     var proxy = queued[data.id];
     if (!proxy) return;
 
-    if (!data.success && data.tries < retries) {
+    if (!data.success && data.tries < opts.retries) {
       fs.unlink(data.filename, noop);
       data.tries++;
-      data.filename = path.join(tmp, hat()) + '.' + data.format;
+      data.filename = _getTmpFile(opts.tmp,data.format);
       data.sent = Date.now();
       return worker.write(data);
     }
@@ -242,15 +236,23 @@ var create = function(opts) {
   });
 
   var mkdir = thunky(function(cb) {
-    mkdirp(tmp, cb);
+    mkdirp(opts.tmp, cb);
   });
 
   var render = function(url, ropts) {
-    ropts = xtend({format:format, url:url, printMedia: opts.printMedia}, ropts);
-    ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
+    ropts = xtend({
+      url        : url,
+      format     : opts.format,
+      printMedia : opts.printMedia,
+      expects    : opts.expects,
+      timeout    : opts.timeout
+    }, ropts);
+    ropts.filename = _getTmpFile(opts.tmp,ropts.format);
     ropts.id = hat();
     ropts.sent = Date.now();
     ropts.tries = 0;
+
+
     if (ropts.crop === true) ropts.crop = {top:0, left:0};
 
     var proxy = queued[ropts.id] = new Proxy();
@@ -275,5 +277,9 @@ var create = function(opts) {
 
   return render;
 };
+
+function _getTmpFile (tmpDir,format) {
+  return path.join(tmpDir, process.pid + '.' + hat()) + '.' + format;
+}
 
 module.exports = create;

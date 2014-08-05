@@ -119,7 +119,7 @@ var loop = function() {
     var waitAndRender = function() {
       var timeout = setTimeout(function() {
         page.onAlert('webpage-error');
-      }, 10000);
+      }, line.timeout);
 
       var rendered = false;
       page.onAlert = function(msg) {
