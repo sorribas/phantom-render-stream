@@ -247,6 +247,7 @@ var create = function(opts) {
 
   var render = function(url, ropts) {
     ropts = xtend({format:format, url:url, printMedia: opts.printMedia}, ropts);
+    ropts.maxRenders = opts.maxRenders;
     ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
     ropts.id = hat();
     ropts.sent = Date.now();

@@ -61,6 +61,7 @@ var forcePrintMedia = function() {
   });
 };
 
+var renders = 0, maxRenders = 20;
 var loop = function() {
   var line = system.stdin.readLine();
   if (!line.trim()) return phantom.exit(0);
@@ -73,6 +74,7 @@ var loop = function() {
 
   if (!page) page = webpage.create();
 
+  if (line.maxRenders) maxRenders = line.maxRenders;
   page.viewportSize = {
     width: line.width || 1280,
     height: line.height || 960
@@ -112,6 +114,7 @@ var loop = function() {
         page = null;
         line.success = true;
         console.log(JSON.stringify(line));
+        if (maxRenders && renders++ >= maxRenders) phantom.exit(0);
         loop();
       }, 0);
     };
