@@ -61,7 +61,7 @@ var forcePrintMedia = function() {
   });
 };
 
-var renders = 0, maxRenders = 20;
+var renders = 0, maxRenders = 1000;
 var loop = function() {
   var line = system.stdin.readLine();
   if (!line.trim()) return phantom.exit(0);
