@@ -129,8 +129,6 @@ render, it's likely a connection issue of some sort. If the URL uses SSL,
 adding `--ignore-ssl-errors=true` to phantomFlags may help. You also try adding
 `--debug=true` to the `phantomFlags` array.
 
-## 
-
 
 ## See Also
 
