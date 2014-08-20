@@ -115,7 +115,7 @@ Here is an example to illustrate it better.
 
 For rendering, PhantomJS requires the `fontconfig` library, which may be missing if you're using Ubuntu Server. To install on Ubuntu:
 
-  sudo apt-get install libfontconfig
+    sudo apt-get install libfontconfig
 
 ## Troubleshooting
 
