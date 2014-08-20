@@ -111,6 +111,12 @@ Here is an example to illustrate it better.
 </html>
 ```
 
+## Extra Dependencies
+
+For rendering, PhantomJS requires the `fontconfig` library, which may be missing if you're using Ubuntu Server. To install on Ubuntu:
+
+  sudo apt-get install libfontconfig
+
 ## Troubleshooting
 
 Some additional debugging output may be enabled by running your script with a
@@ -122,6 +128,8 @@ If you are getting undefined error codes and responses when attempting to
 render, it's likely a connection issue of some sort. If the URL uses SSL,
 adding `--ignore-ssl-errors=true` to phantomFlags may help. You also try adding
 `--debug=true` to the `phantomFlags` array.
+
+## 
 
 
 ## See Also
