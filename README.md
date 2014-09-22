@@ -36,9 +36,10 @@ var render = phantom({
   width       : 1280,        // Changes the width size. Defaults to 1280
   height      : 800,         // Changes the height size. Defaults to 960
   paperFormat : 'A4',        // Defaults to A4. Also supported: 'A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid'.
-  orientation : 'portriat',  // Defaults to portrait. 'landscape' is also valid
+  orientation : 'portrait',  // Defaults to portrait. 'landscape' is also valid
   margin      : '0cm',       // Defaults to 0cm. Supported dimension units are: 'mm', 'cm', 'in', 'px'. No unit means 'px'.
   userAgent   : '',          // No default.
+  paperSize:  : null,        // Defaults to the paper format, orientation, and margin.
   crop        : false,       // Defaults to false. Set to true or {top:5, left:5} to add margin
   printMedia  : false,       // Defaults to false. Force the use of a print stylesheet.
   maxErrors   : 3,           // Number errors phantom process is allowed to throw before killing it. Defaults to 3.
