@@ -1,7 +1,6 @@
 var concat = require('concat-stream');
 var test = require('./helpers/test');
 var phantom = require('../');
-var fs = require('fs');
 
 test('simple render', function(host, t) {
   var render = phantom();

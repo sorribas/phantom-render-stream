@@ -1,17 +1,21 @@
 var mkdirp = require('mkdirp');
 var thunky = require('thunky');
 var fs = require('fs');
-var pump = require('pump');
 var stream = require('stream');
 var once = require('once');
 var ldjson = require('ldjson-stream');
-var duplexer = require('duplexer');
+var duplexify = require('duplexify');
+var concat = require('concat-stream');
+var eos = require('end-of-stream');
+var LRU = require('lru-cache');
+var serverDestroy = require('server-destroy');
 var proc = require('child_process');
 var xtend = require('xtend');
 var hat = require('hat');
 var path = require('path');
 var util = require('util');
 var os = require('os');
+var http = require('http');
 var debug = require('debug')('phantom-render-stream');
 var debugStream = require('debug-stream')(debug);
 var phantomjsPath = require('phantomjs').path;
@@ -20,28 +24,47 @@ var noop = function() {};
 
 var TMP = path.join(fs.existsSync('/tmp') ? '/tmp' : os.tmpDir(), 'phantom-render-stream');
 
-var Proxy = function() {
-  stream.Transform.call(this);
-  this.bytesRead = 0;
-  this.destroyed = false;
-  this.on('end', function() {
-    this.destroy();
+var serve = function() {
+  var cache = LRU(200);
+  var server = http.createServer(function(request, response) {
+    request.connection.unref();
+
+    var id = request.url.replace(/^\//, '');
+    var html = cache.get(id);
+
+    if(!html) {
+      response.writeHead(404);
+      response.end();
+    } else {
+      response.writeHead(200, {
+        'Content-Type': 'text/html',
+        'Content-Length': html.length
+      });
+      response.end(html);
+    }
   });
-};
 
-util.inherits(Proxy, stream.Transform);
+  var listen = thunky(function(cb) {
+    server.listen(0, function() {
+      server.unref();
 
-Proxy.prototype._transform = function(data, enc, cb) {
-  if (this.destroyed) return;
-  this.bytesRead += data.length;
-  cb(null, data);
-};
+      var port = server.address().port;
+      cb(null, 'http://localhost:' + port);
+    });
+  });
 
-Proxy.prototype.destroy = function(err) {
-  if (this.destroyed) return;
-  this.destroyed = true;
-  if (err) this.emit('error', err);
-  this.emit('close');
+  var set = function(id, html, cb) {
+    listen(function(err, base) {
+      if(err) return cb(err);
+      cache.set(id, html);
+      cb(null, base + '/' + id);
+    });
+  };
+
+  server.set = set;
+  serverDestroy(server);
+
+  return server;
 };
 
 var spawn = function(opts) {
@@ -63,7 +86,7 @@ var spawn = function(opts) {
   child.stdout.on('error', onerror);
   child.stderr.on('error', onerror);
 
-  var result = duplexer(input, output);
+  var result = duplexify.obj(input, output);
 
   result.process = child;
 
@@ -127,7 +150,7 @@ var pool = function(opts) {
   var update = function(worker) {
     updateTimeout(worker);
     updateReferences(worker);
-  }
+  };
 
   var select = function() {
     var worker = workers.reduce(function(a,b) {
@@ -215,10 +238,10 @@ var create = function(opts) {
   var format  = opts.format;
 
   var worker = pool(opts);
+  var server = serve();
   var queued = {};
 
   worker.on('data', function(data) {
-    var id = data.id;
     var proxy = queued[data.id];
     if (!proxy) return;
 
@@ -236,9 +259,11 @@ var create = function(opts) {
       return proxy.destroy(new Error('Render failed ('+data.tries+' tries)'));
     }
 
-    pump(fs.createReadStream(data.filename), proxy, function() {
+    eos(proxy, { writable: false }, function() {
       fs.unlink(data.filename, noop);
     });
+
+    proxy.setReadable(fs.createReadStream(data.filename));
   });
 
   var mkdir = thunky(function(cb) {
@@ -246,32 +271,53 @@ var create = function(opts) {
   });
 
   var render = function(url, ropts) {
-    ropts = xtend({format:format, url:url, printMedia: opts.printMedia}, ropts);
-    ropts.maxRenders = opts.maxRenders;
-    ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
-    ropts.id = hat();
-    ropts.sent = Date.now();
-    ropts.tries = 0;
-    if (ropts.crop === true) ropts.crop = {top:0, left:0};
+    if(typeof url !== 'string') {
+      ropts = url;
+      url = null;
+    }
 
-    var proxy = queued[ropts.id] = new Proxy();
+    var id = hat();
+    var proxy = queued[id] = duplexify();
 
-    mkdir(function(err) {
-      if (err) return proxy.destroy(err);
-      ropts.tries++;
-      worker.write(ropts);
-    });
+    var initialize = function(url) {
+      ropts = xtend({format:format, url:url, printMedia: opts.printMedia}, ropts);
+      ropts.maxRenders = opts.maxRenders;
+      ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
+      ropts.id = id;
+      ropts.sent = Date.now();
+      ropts.tries = 0;
+      if (ropts.crop === true) ropts.crop = {top:0, left:0};
+
+      mkdir(function(err) {
+        if (err) return proxy.destroy(err);
+        ropts.tries++;
+        worker.write(ropts);
+      });
+    };
 
     proxy.on('close', function() { // gc yo
-      delete queued[ropts.id];
+      delete queued[id];
     });
+
+    if(url) {
+      initialize(url);
+    } else {
+      var sink = concat(function(data) {
+        server.set(id, data, function(err, url) {
+          if(err) return proxy.destroy(err);
+          initialize(url);
+        });
+      });
+
+      proxy.setWritable(sink);
+    }
 
     return proxy;
   };
 
   render.destroy = function(cb) {
     worker.destroy();
-    if (cb) cb();
+    server.destroy(cb);
   };
 
   return render;
