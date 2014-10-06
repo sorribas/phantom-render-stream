@@ -61,7 +61,17 @@ var serve = function() {
     });
   };
 
+  var safeDestroy = function(cb) {
+    try {
+      // throws if server is not started
+      server.destroy(cb);
+    } catch(err) {
+      if(cb) cb();
+    }
+  };
+
   server.set = set;
+  server.safeDestroy = safeDestroy;
   serverDestroy(server);
 
   return server;
@@ -317,7 +327,7 @@ var create = function(opts) {
 
   render.destroy = function(cb) {
     worker.destroy();
-    server.destroy(cb);
+    server.safeDestroy(cb);
   };
 
   return render;
