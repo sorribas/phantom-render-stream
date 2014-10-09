@@ -21,7 +21,17 @@ var phantom = require('phantom-render-stream');
 var fs = require('fs');
 
 var render = phantom();
-render('http://example.com/my-site').pipe(fs.createWriteStream('out.png'));
+
+// render a website url
+
+render('http://example.com/my-site')
+  .pipe(fs.createWriteStream('out.png'));
+
+// or as a transform stream
+
+fs.createReadStream('some-html-file.html')
+  .pipe(render())
+  .pipe(fs.createWriteStream('out.png'))
 ```
 
 You can also pass some options:
