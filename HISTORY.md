@@ -1,10 +1,38 @@
 
+ * Documented how to use `render` as a transform stream.
+
+1.2.0 / 2014-10-09
+==================
+
+ * `render` now returns a duplex stream
+
+1.1.0 / 2014-09-23
+==================
+
+ * `paperSize` can now be set manually.
+
+1.0.4 / 2014-09-02
+==================
+
+ * fontconfig depenendency is now documented in README.
+ * `maxRenders` default was updated to be 500
+
+1.0.3 / 2014-08-14
+==================
+
+ * `maxRenders` default was updated to be 1000
+
+1.0.2 / 2014-08-14
+==================
+
   * 'retries' option is now documented (Mark Stosberg)
   * Add "Troubleshooting" and "See Also" sections to README.md (Mark Stosberg)
   * Add HISTORY.md file (Mark Stosberg)
   * default value of 'tmp' is now documented (Mark Stosberg)
   * `maxErrors` option is documented. The option is used to limit how many phantom process errors
      are tolerated befor the process is killed.
+  * `maxRenders` option is addeded. It is the number of options that a phantom process can make before 
+     it will be restarted. Defaults to 20. 
 
 1.0.1 / 2014-06-19
 ==================
