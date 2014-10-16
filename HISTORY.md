@@ -1,4 +1,4 @@
-
+<<<<<<< HEAD
  * Documented how to use `render` as a transform stream.
 
 1.2.0 / 2014-10-09
@@ -25,7 +25,8 @@
 1.0.2 / 2014-08-14
 ==================
 
-  * 'retries' option is now documented (Mark Stosberg)
+  * 'retries' option is now documented (Mark Stosberg) 
+  * Provide complete request details when rendering fails. (Mark Stosberg)
   * Add "Troubleshooting" and "See Also" sections to README.md (Mark Stosberg)
   * Add HISTORY.md file (Mark Stosberg)
   * default value of 'tmp' is now documented (Mark Stosberg)
