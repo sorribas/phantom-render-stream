@@ -3,7 +3,6 @@
 // Note that the 'fs' module here has a different API than the one in node.js core.
 var webpage = require('webpage');
 var system = require('system');
-var fs = require('fs');
 
 var page = webpage.create();
 
