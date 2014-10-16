@@ -266,7 +266,7 @@ var create = function(opts) {
     delete queued[data.id];
     if (!data.success) {
       fs.unlink(data.filename, noop);
-      return proxy.destroy(new Error('Render failed ('+data.tries+' tries)'));
+      return proxy.destroy(new Error('Render failed ('+data.tries+' tries) Request details: '+JSON.stringify(data)));
     }
 
     eos(proxy, { writable: false }, function() {
