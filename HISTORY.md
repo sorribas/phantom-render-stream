@@ -1,5 +1,8 @@
 
  * Documented how to use `render` as a transform stream.
+ * When '--debug=true' is used as a phantomFlag, STDERR of the Phantom process is now
+   piped to the parent process STDERR adding a '[phantom stderr] ' prefix so that you can tell
+   it apart. (Mark Stosberg)
 
 1.2.0 / 2014-10-09
 ==================
