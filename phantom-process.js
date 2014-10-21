@@ -88,6 +88,8 @@ var loop = function() {
 
   if (line.userAgent) page.settings.userAgent = line.userAgent;
 
+  if (line.headers) page.customHeaders = line.headers;
+
   if (line.crop) {
     page.clipRect = {
       width: line.crop.width || page.viewportSize.width,
