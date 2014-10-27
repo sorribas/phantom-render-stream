@@ -58,7 +58,7 @@ var render = phantom({
   retries     : 1,           // How many times to try a render before giving up. Defaults to 1.
   phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to phantomjs
   maxRenders  : 20,          // How many renders can a phantom process make before being restarted. Defaults to 20
-  cookies     : [{name: 'connect.sid', value: 'abc123'}] // Array of cookies, see http://phantomjs.org/api/webpage/method/add-cookie.html
+
 });
 ```
 
@@ -124,10 +124,16 @@ Here is an example to illustrate it better.
 ```
 
 ## Adding Cookies
-You can add any special cookies with `opts.cookies`.  For format, see http://phantomjs.org/api/webpage/method/add-cookie.html.  Example:
+You can add any special cookies at render time.  For format, see http://phantomjs.org/api/webpage/method/add-cookie.html.  Example:
 
 ```javascript
 var render = phantom({
+  pool: 5,
+  format: 'pdf'
+  // other opts
+});
+
+render('http://somewhere.com', {
   cookies: [{
     'name'     : 'Valid-Cookie-Name',   /* required property */
     'value'    : 'Valid-Cookie-Value',  /* required property */
@@ -137,11 +143,9 @@ var render = phantom({
     'secure'   : false,
     'expires'  : (new Date()).getTime() + (1000 * 60 * 60)   /* <-- expires in 1 hour */
   }]
-});
+}).pipe(somewhereElse);
 ```
-
-You probably want to set the `expires` property to something fairly short, as there may not be a guarantee that a pooled phantom process won't
-pick up the cookie for a particular render job, and you may want that session to only be valid for an individual job run.
+That will use that cookie for that particular render job.  You probably want to set the `expires` property to something fairly short, as there may not be a guarantee that a pooled phantom process won't pick up the cookie for a particular render job, and you may want that session to only be valid for an individual job run.
 
 ## Extra Dependencies
 
