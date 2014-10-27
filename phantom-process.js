@@ -73,6 +73,16 @@ var loop = function() {
 
   if (!page) page = webpage.create();
 
+  // inject polyfills or other scripts if necessary
+  if (line.injectJs && line.injectJs.length > 0) {
+    page.onInitialized = function () {
+      line.injectJs.forEach(function (path) {
+        console.log('Injecting script: ', path);
+        page.injectJs(path);
+      });
+    };
+  }
+
   if (line.maxRenders) maxRenders = line.maxRenders;
   page.viewportSize = {
     width: line.width || 1280,
