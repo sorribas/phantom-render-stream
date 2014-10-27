@@ -73,6 +73,8 @@ var loop = function() {
 
   if (!page) page = webpage.create();
 
+  if (line.customHeaders) page.customHeaders = line.customHeaders;
+
   if (line.maxRenders) maxRenders = line.maxRenders;
   page.viewportSize = {
     width: line.width || 1280,
@@ -96,7 +98,7 @@ var loop = function() {
       height: line.crop.height || page.viewportSize.height,
       top: line.crop.top || 0,
       left: line.crop.left || 0
-    }
+    };
   }
 
   var onerror = function() {
@@ -104,7 +106,7 @@ var loop = function() {
     console.log(JSON.stringify(line));
     page = null;
     loop();
-  }
+  };
 
   page.open(line.url, function(requestStatus) {
     if (requestStatus !== 'success') return onerror();

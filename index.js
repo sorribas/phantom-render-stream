@@ -297,6 +297,7 @@ var create = function(opts) {
       ropts.sent = Date.now();
       ropts.tries = 0;
       if (ropts.crop === true) ropts.crop = {top:0, left:0};
+      ropts.customHeaders = opts.customHeaders || {};
 
       mkdir(function(err) {
         if (err) return proxy.destroy(err);
