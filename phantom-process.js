@@ -73,6 +73,12 @@ var loop = function() {
 
   if (!page) page = webpage.create();
 
+  if (line.phantomConsole === true) {
+    page.onConsoleMessage = function (msg) {
+      console.log('\tconsole: ' + msg);
+    };
+  }
+
   if (line.maxRenders) maxRenders = line.maxRenders;
   page.viewportSize = {
     width: line.width || 1280,
