@@ -298,6 +298,8 @@ var create = function(opts) {
       ropts.tries = 0;
       if (ropts.crop === true) ropts.crop = {top:0, left:0};
 
+      ropts.injectJs = opts.injectJs || [];
+
       mkdir(function(err) {
         if (err) return proxy.destroy(err);
         ropts.tries++;
