@@ -73,6 +73,12 @@ var loop = function() {
 
   if (!page) page = webpage.create();
 
+  if (line.cookies && line.cookies.length > 0) {
+    line.cookies.forEach(function (c) {
+      phantom.addCookie(c);
+    });
+  }
+
   if (line.maxRenders) maxRenders = line.maxRenders;
   page.viewportSize = {
     width: line.width || 1280,
