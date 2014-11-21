@@ -1,4 +1,13 @@
+1.4.0 / 2014-11-21
+==================
 
+ * Added support for passing cookies.
+ * Added support for injecting polyfills.
+
+1.3.0 / 2014-10-21
+==================
+
+ * Added support for headers option when rendering a page.
  * Documented how to use `render` as a transform stream.
 
 1.2.0 / 2014-10-09
