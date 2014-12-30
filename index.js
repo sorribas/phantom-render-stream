@@ -129,8 +129,6 @@ var spawn = function(opts) {
   return result;
 };
 
-var noop = function() {};
-
 var pool = function(opts) {
   var size = opts.pool;
   var timeout = opts.timeout;
