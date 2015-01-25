@@ -43,6 +43,7 @@ var render = phantom({
   tmp         : '/tmp',      // Set the tmp where tmp data is stored when communicating with the phantom process.
                              //   Defaults to /tmp if it exists, or os.tmpDir()
   format      : 'jpeg',      // The default output format. Defaults to png
+  quality     : 100,         // The default image quality. Defaults to 100. Only relevant for jpeg format.
   width       : 1280,        // Changes the width size. Defaults to 1280
   height      : 800,         // Changes the height size. Defaults to 960
   paperFormat : 'A4',        // Defaults to A4. Also supported: 'A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid'.
@@ -66,7 +67,7 @@ var render = phantom({
 Or override the options for each render stream
 
 ``` js
-render(myUrl, {format:'jpeg', width: 1280, height: 960}).pipe(...)
+render(myUrl, {format:'jpeg', quality: 100, width: 1280, height: 960}).pipe(...)
 ```
 
 ## Supported output formats

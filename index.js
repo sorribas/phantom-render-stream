@@ -237,6 +237,7 @@ var create = function(opts) {
     retries      : 1,
     tmp          : TMP,
     format       : 'png',
+    quality       : 100
   };
 
   opts = xtend(defaultOpts,opts);
@@ -244,6 +245,7 @@ var create = function(opts) {
   var retries = opts.retries;
   var tmp     = opts.tmp;
   var format  = opts.format;
+  var quality = opts.quality;
 
   var worker = pool(opts);
   var server = serve();
@@ -288,7 +290,7 @@ var create = function(opts) {
     var proxy = queued[id] = duplexify();
 
     var initialize = function(url) {
-      ropts = xtend({format:format, url:url, printMedia: opts.printMedia}, ropts);
+      ropts = xtend({format:format, quality:quality, url:url, printMedia: opts.printMedia}, ropts);
       ropts.maxRenders = opts.maxRenders;
       ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
       ropts.id = id;
