@@ -56,7 +56,7 @@ var render = phantom({
   maxErrors   : 3,           // Number errors phantom process is allowed to throw before killing it. Defaults to 3.
   expects     : 'something', // No default. Do not render until window.renderable is set to 'something'
   retries     : 1,           // How many times to try a render before giving up. Defaults to 1.
-  phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to phantomjs 
+  phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to phantomjs
   maxRenders  : 20,          // How many renders can a phantom process make before being restarted. Defaults to 20
 
   injectJs    : ['./includes/my-polyfill.js'] // Array of paths to polyfill components or external scripts that will be injected when the page is initialized
@@ -97,7 +97,7 @@ render('http://google.com')
 ## Deferred render
 
 If you need your page to do something before phantom renders it you just need to immediately set
-`window.renderable` to false. If that is set when the page is opened the module will wait for 
+`window.renderable` to false. If that is set when the page is opened the module will wait for
 `window.renderable` to be set to true and when this happens the render will occur.
 
 Here is an example to illustrate it better.

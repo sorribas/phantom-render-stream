@@ -40,8 +40,8 @@
   * default value of 'tmp' is now documented (Mark Stosberg)
   * `maxErrors` option is documented. The option is used to limit how many phantom process errors
      are tolerated befor the process is killed.
-  * `maxRenders` option is addeded. It is the number of options that a phantom process can make before 
-     it will be restarted. Defaults to 20. 
+  * `maxRenders` option is addeded. It is the number of options that a phantom process can make before
+     it will be restarted. Defaults to 20.
 
 1.0.1 / 2014-06-19
 ==================
@@ -62,12 +62,12 @@
   * Kill phantom after 3 errors. New `maxErrors` option is added, but not yet documented.
 
 0.8.7 / 2014-06-19
-================== 
+==================
 
   * Forward printMedia option to phantomProcess
 
 0.8.6 / 2014-06-18
-================== 
+==================
 
   * Do not parse JSON strictly.
 
@@ -76,7 +76,7 @@
 
   * Bump ldjson-stream version requirement
   * Added support for passing command line options to phanton (Mark Stosberg, Ben Dalton)
-  
+
 0.8.4 / 2014-06-17
 ==================
 
