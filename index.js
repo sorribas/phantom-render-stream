@@ -273,32 +273,39 @@ var create = function(opts) {
     mkdirp(opts.tmp, cb);
   });
 
-  var render = function(url, ropts) {
-    ropts = xtend({
-      url        : url,
-      quality:opts.quality,
-      format     : opts.format,
-      printMedia : opts.printMedia,
-      expects    : opts.expects,
-      timeout    : opts.timeout
-    }, ropts);
-    ropts.filename = _getTmpFile(opts.tmp,ropts.format);
-    ropts.id = hat();
-    ropts.sent = Date.now();
-    ropts.tries = 0;
-    ropts.injectJs = opts.injectJs || [];
-
-
-    if (ropts.crop === true) ropts.crop = {top:0, left:0};
+  var render  = function(url, ropts) {
+    if(typeof url !== 'string') {
+      ropts = url;
+      url = null;
+    }
 
     var id = hat();
     var proxy = queued[id] = duplexify();
 
-    mkdir(function(err) {
-      if (err) return proxy.destroy(err);
-      ropts.tries++;
-      worker.write(ropts);
-    });
+    var initialize = function (url) {
+      ropts = xtend({
+        url        : url,
+        quality:opts.quality,
+        format     : opts.format,
+        printMedia : opts.printMedia,
+        expects    : opts.expects,
+        timeout    : opts.timeout
+      }, ropts);
+      ropts.maxRenders = opts.maxRenders;
+      ropts.filename = _getTmpFile(opts.tmp,ropts.format);
+      ropts.id = id;
+      ropts.sent = Date.now();
+      ropts.tries = 0;
+      if (ropts.crop === true) ropts.crop = {top:0, left:0};
+
+      ropts.injectJs = opts.injectJs || [];
+
+      mkdir(function(err) {
+        if (err) return proxy.destroy(err);
+        ropts.tries++;
+        worker.write(ropts);
+      });
+    };
 
     proxy.on('close', function() { // gc yo
       delete queued[id];
