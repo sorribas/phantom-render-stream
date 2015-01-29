@@ -1,3 +1,6 @@
+
+ * Provide complete request details when rendering fails. (Mark Stosberg)
+
 1.5.0 / 2015-01-28
 ==================
 
@@ -40,7 +43,6 @@
 ==================
 
   * 'retries' option is now documented (Mark Stosberg) 
-  * Provide complete request details when rendering fails. (Mark Stosberg)
   * Add "Troubleshooting" and "See Also" sections to README.md (Mark Stosberg)
   * Add HISTORY.md file (Mark Stosberg)
   * default value of 'tmp' is now documented (Mark Stosberg)
