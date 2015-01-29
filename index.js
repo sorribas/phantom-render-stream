@@ -227,8 +227,6 @@ var pool = function(opts) {
 };
 
 var create = function(opts) {
-  if (!opts) opts = {};
-
   var defaultOpts = {
     pool         : 1,
     maxErrors    : 3,
@@ -237,15 +235,10 @@ var create = function(opts) {
     retries      : 1,
     tmp          : TMP,
     format       : 'png',
-    quality       : 100
+    quality      : 100
   };
 
   opts = xtend(defaultOpts,opts);
-
-  var retries = opts.retries;
-  var tmp     = opts.tmp;
-  var format  = opts.format;
-  var quality = opts.quality;
 
   var worker = pool(opts);
   var server = serve();
@@ -255,10 +248,10 @@ var create = function(opts) {
     var proxy = queued[data.id];
     if (!proxy) return;
 
-    if (!data.success && data.tries < retries) {
+    if (!data.success && data.tries < opts.retries) {
       fs.unlink(data.filename, noop);
       data.tries++;
-      data.filename = path.join(tmp, hat()) + '.' + data.format;
+      data.filename = _getTmpFile(opts.tmp,data.format);
       data.sent = Date.now();
       return worker.write(data);
     }
@@ -277,10 +270,10 @@ var create = function(opts) {
   });
 
   var mkdir = thunky(function(cb) {
-    mkdirp(tmp, cb);
+    mkdirp(opts.tmp, cb);
   });
 
-  var render = function(url, ropts) {
+  var render  = function(url, ropts) {
     if(typeof url !== 'string') {
       ropts = url;
       url = null;
@@ -289,10 +282,17 @@ var create = function(opts) {
     var id = hat();
     var proxy = queued[id] = duplexify();
 
-    var initialize = function(url) {
-      ropts = xtend({format:format, quality:quality, url:url, printMedia: opts.printMedia}, ropts);
+    var initialize = function (url) {
+      ropts = xtend({
+        url        : url,
+        quality:opts.quality,
+        format     : opts.format,
+        printMedia : opts.printMedia,
+        expects    : opts.expects,
+        timeout    : opts.timeout
+      }, ropts);
       ropts.maxRenders = opts.maxRenders;
-      ropts.filename = path.join(tmp, process.pid + '.' + hat()) + '.' + ropts.format;
+      ropts.filename = _getTmpFile(opts.tmp,ropts.format);
       ropts.id = id;
       ropts.sent = Date.now();
       ropts.tries = 0;
@@ -334,5 +334,9 @@ var create = function(opts) {
 
   return render;
 };
+
+var _getTmpFile = function(tmpDir,format) {
+  return path.join(tmpDir, process.pid + '.' + hat()) + '.' + format;
+}
 
 module.exports = create;
