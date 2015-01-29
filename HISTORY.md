@@ -1,3 +1,11 @@
+
+ * Provide complete request details when rendering fails. (Mark Stosberg)
+
+1.5.0 / 2015-01-28
+==================
+
+ * New quality option for specifying JPEG image quality. Defaults to 100.
+
 1.4.0 / 2014-11-21
 ==================
 
@@ -34,7 +42,7 @@
 1.0.2 / 2014-08-14
 ==================
 
-  * 'retries' option is now documented (Mark Stosberg)
+  * 'retries' option is now documented (Mark Stosberg) 
   * Add "Troubleshooting" and "See Also" sections to README.md (Mark Stosberg)
   * Add HISTORY.md file (Mark Stosberg)
   * default value of 'tmp' is now documented (Mark Stosberg)
