@@ -1,6 +1,5 @@
 // Code to be run by PhantomJS.
 // The docs for these modules are here: http://phantomjs.org/api/
-// Note that the 'fs' module here has a different API than the one in node.js core.
 var webpage = require('webpage');
 var system = require('system');
 
