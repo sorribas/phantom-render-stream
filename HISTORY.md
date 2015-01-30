@@ -1,14 +1,18 @@
 
- * When '--debug=true' is used as a phantomFlag and
-   'DEBUG=phantom-render-stream' is set in the environment, 
-   STDERR of the Phantom process is now piped to the parent process STDERR
-   and labeled as `stderr` so that you can tell it apart from `stdout`. (Mark Stosberg)
 
  * When `DEBUG=phantom-render-stream` is set, we now also provide the console.log output
    from the Phantom process (Davis Ford and Mark Stosberg)
 
  * New ./debug.js tool has been added to help troubleshoot render failures. See
    Troubleshooting section in the README for details. (Mark Stosberg)
+
+1.7.0 / 2015-01-30
+==================
+
+ * When '--debug=true' is used as a phantomFlag and
+   'DEBUG=phantom-render-stream' is set in the environment,
+   STDERR of the Phantom process is now piped to the parent process STDERR
+   and labeled as `stderr` so that you can tell it apart from `stdout`. (Mark Stosberg)
 
 
 1.6.0 / 2015-01-29
