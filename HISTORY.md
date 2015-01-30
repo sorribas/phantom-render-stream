@@ -1,5 +1,11 @@
 
+1.6.0 / 2015-01-29
+==================
+
  * Provide complete request details when rendering fails. (Mark Stosberg)
+ * Bug fix: "Render failed" no longer fails due to hardcoded internal timeout
+   value when rendering takes longer than 10 seconds and 'timeout' value is
+   set sufficiently high (#43, fixed by Mark Stosberg)
 
 1.5.0 / 2015-01-28
 ==================
