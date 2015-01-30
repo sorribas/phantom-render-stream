@@ -5,6 +5,15 @@ var system = require('system');
 
 var page = webpage.create();
 
+// If the parent set DEBUG=phantom-render-stream in the environment,
+// it will be passed through here and we'll send phantom's console.log messages back to STDOUT
+if (system.env.DEBUG && system.env.DEBUG.match(/phantom-render-stream/)) {
+  page.onConsoleMessage = function (msg) {
+    console.log('console.log: ' + msg);
+  };
+}
+
+
 var forcePrintMedia = function() {
   page.evaluate(function() {
     var findPrintMedia = function() {
