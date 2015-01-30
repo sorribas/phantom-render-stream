@@ -182,6 +182,12 @@ render, it's likely a connection issue of some sort. If the URL uses SSL,
 adding `--ignore-ssl-errors=true` to phantomFlags may help. You also try adding
 `--debug=true` to the `phantomFlags` array.
 
+A simple script with debugging options enabled is included with the
+project to help you as well. To use it from the project directory, simply:
+
+    node ./debug.js http://your.url.to.debug
+
+Maximal debugging output will be provided. Check [the source](./debug.js) for more ideas.
 
 ## See Also
 
