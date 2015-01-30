@@ -86,7 +86,7 @@ var spawn = function(opts) {
   var output = ldjson.parse({strict: false});
 
   child.stdout.pipe(debugStream('phantom (%s) stdout', child.pid)).pipe(output);
-  child.stderr.pipe(debugStream('phantom (%s) stderr', child.pid)).pipe(process.stderr);
+  child.stderr.pipe(debugStream('phantom (%s) stderr', child.pid)).resume();
   input.pipe(debugStream('phantom (%s) stdin', child.pid)).pipe(child.stdin);
 
   var onerror = once(function() {
