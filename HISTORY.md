@@ -1,5 +1,16 @@
 
+ * When '--debug=true' is used as a phantomFlag and
+   'DEBUG=phantom-render-stream' is set in the environment, 
+   STDERR of the Phantom process is now piped to the parent process STDERR
+   and labeled as `stderr` so that you can tell it apart from `stdout`. (Mark Stosberg)
+
+1.6.0 / 2015-01-29
+==================
+
  * Provide complete request details when rendering fails. (Mark Stosberg)
+ * Bug fix: "Render failed" no longer fails due to hardcoded internal timeout
+   value when rendering takes longer than 10 seconds and 'timeout' value is
+   set sufficiently high (#43, fixed by Mark Stosberg)
 
 1.5.0 / 2015-01-28
 ==================
