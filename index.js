@@ -289,8 +289,6 @@ var create = function(opts) {
         url        : url
       }, sopts);
 
-      console.log('ropts', ropts)
-
       ropts.maxRenders = opts.maxRenders;
       ropts.filename = _getTmpFile(opts.tmp,ropts.format);
       ropts.id = id;
