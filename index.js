@@ -284,14 +284,13 @@ var create = function(opts) {
     var proxy = queued[id] = duplexify();
 
     var initialize = function (url) {
+      sopts = xtend(opts, ropts)
       ropts = xtend({
-        url        : url,
-        quality:opts.quality,
-        format     : opts.format,
-        printMedia : opts.printMedia,
-        expects    : opts.expects,
-        timeout    : opts.timeout
-      }, ropts);
+        url        : url
+      }, sopts);
+
+      console.log('ropts', ropts)
+
       ropts.maxRenders = opts.maxRenders;
       ropts.filename = _getTmpFile(opts.tmp,ropts.format);
       ropts.id = id;
