@@ -58,7 +58,7 @@ var render = phantom({
   expects     : 'something', // No default. Do not render until window.renderable is set to 'something'
   retries     : 1,           // How many times to try a render before giving up. Defaults to 1.
   phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to phantomjs
-  maxRenders  : 20,          // How many renders can a phantom process make before being restarted. Defaults to 20
+  maxRenders  : 500,          // How many renders can a phantom process make before being restarted. Defaults to 500
 
   injectJs    : ['./includes/my-polyfill.js'] // Array of paths to polyfill components or external scripts that will be injected when the page is initialized
 });
