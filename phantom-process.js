@@ -1,10 +1,18 @@
 // Code to be run by PhantomJS.
 // The docs for these modules are here: http://phantomjs.org/api/
-// Note that the 'fs' module here has a different API than the one in node.js core.
 var webpage = require('webpage');
 var system = require('system');
 
 var page = webpage.create();
+
+// If the parent set DEBUG=phantom-render-stream in the environment,
+// it will be passed through here and we'll send phantom's console.log messages back to STDOUT
+if (system.env.DEBUG && system.env.DEBUG.match(/phantom-render-stream/)) {
+  page.onConsoleMessage = function (msg) {
+    console.log('console.log: ' + msg);
+  };
+}
+
 
 var forcePrintMedia = function() {
   page.evaluate(function() {
