@@ -79,7 +79,7 @@ var serve = function() {
 
 var spawn = function(opts) {
   var phantomjsArgs = opts.phantomFlags.concat(path.join(__dirname, 'phantom-process.js'));
-  var child = proc.spawn(phantomjsPath, phantomjsArgs);
+  var child = proc.spawn(opts.phantomPath, phantomjsArgs);
   debug('phantom (%s) spawned', child.pid);
 
   var input = ldjson.serialize();
@@ -231,6 +231,7 @@ var create = function(opts) {
   var defaultOpts = {
     pool         : 1,
     maxErrors    : 3,
+    phantomPath  : phantomjsPath,
     phantomFlags : [],
     timeout      : 30000,
     retries      : 1,

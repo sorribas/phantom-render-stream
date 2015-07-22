@@ -57,6 +57,7 @@ var render = phantom({
   maxErrors   : 3,           // Number errors phantom process is allowed to throw before killing it. Defaults to 3.
   expects     : 'something', // No default. Do not render until window.renderable is set to 'something'
   retries     : 1,           // How many times to try a render before giving up. Defaults to 1.
+  phantomPath : 'phantomjs'  // Defaults to PhantomJS path provided by the phantomjs module.
   phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to phantomjs
   maxRenders  : 500,          // How many renders can a phantom process make before being restarted. Defaults to 500
 
