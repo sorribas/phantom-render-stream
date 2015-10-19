@@ -95,13 +95,6 @@ var loop = function() {
     height: line.height || 960
   };
 
-  page.paperSize = line.paperSize ||
-    {
-      format: line.paperFormat || 'A4',
-      orientation: line.orientation || 'portrait',
-      margin: line.margin || '0cm'
-    };
-
   if (line.userAgent) page.settings.userAgent = line.userAgent;
 
   if (line.headers) page.customHeaders = line.headers;
@@ -124,6 +117,34 @@ var loop = function() {
 
   page.open(line.url, function(requestStatus) {
     if (requestStatus !== 'success') return onerror();
+
+    page.paperSize = line.paperSize || {
+      format: line.paperFormat || 'A4',
+      orientation: line.orientation || 'portrait',
+      margin: line.margin || '0cm',
+      width: '8.5in',
+      height: '11in',
+      header: {},
+      footer: {}
+    }
+
+    /* A PhantomJSPrinting object in the rendered page will determine the header/footer */
+    if (page.evaluate(function(){return typeof PhantomJSPrinting == "object";})) {
+      var paperSize = page.paperSize;
+      paperSize.header.height = page.evaluate(function() {
+        return PhantomJSPrinting.header.height;
+      });
+      paperSize.header.contents = phantom.callback(function(pageNum, numPages) {
+        return page.evaluate(function(pageNum, numPages){return PhantomJSPrinting.header.contents(pageNum, numPages);}, pageNum, numPages);
+      });
+      paperSize.footer.height = page.evaluate(function() {
+        return PhantomJSPrinting.footer.height;
+      });
+      paperSize.footer.contents = phantom.callback(function(pageNum, numPages) {
+        return page.evaluate(function(pageNum, numPages){return PhantomJSPrinting.footer.contents(pageNum, numPages);}, pageNum, numPages);
+      });
+      page.paperSize = paperSize;
+    }
 
     var render = function() {
       setTimeout(function() {
