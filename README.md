@@ -163,6 +163,24 @@ Obviously, make sure the path './includes/my-date-polyfill.js' is resolvable fro
 When the page is [initialized](http://phantomjs.org/api/webpage/handler/on-initialized.html), any scripts you listed there will
 be injected before any rendering happens.
 
+## Header and footer (PDF Only)
+For PDF Files only - Header and Footer can be added by adding a global ``PhantomJSPrinting`` object to the html you are rendering.
+Example:
+
+```
+<script type="text/javascript">
+  var PhantomJSPrinting = {
+    header: {
+      height: "1cm",
+      contents: function(pageNum, numPages) { return pageNum + "/" + numPages; }
+    },
+    footer: {
+      height: "1cm",
+      contents: function(pageNum, numPages) { return pageNum + "/" + numPages; }
+    }
+  };
+</script>
+```
 
 ## Extra Dependencies
 
