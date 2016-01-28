@@ -13,7 +13,7 @@ New requests are added to the pool member with the shortest queue length.
 
 ## Synopsis
 
-This module depends on the [phantomjs](https://www.npmjs.org/package/phantomjs) module, which will install
+This module depends on the [phantomjs-prebuilt](https://www.npmjs.org/package/phantomjs-prebuilt) module, which will install
 `phantomjs` for you if you don't already have it.
 
 ``` js
