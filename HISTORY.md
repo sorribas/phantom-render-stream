@@ -4,6 +4,12 @@
    STDERR of the Phantom process is now piped to the parent process STDERR
    and labeled as `stderr` so that you can tell it apart from `stdout`. (Mark Stosberg)
 
+1.7.1
+==================
+
+1.7.0
+==================
+
 1.6.0 / 2015-01-29
 ==================
 
