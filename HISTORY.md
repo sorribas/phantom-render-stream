@@ -1,4 +1,8 @@
+2.0.0
+==================
 
+ * Switched to PhantomJS 2: replaced the (now deprecated) `phantomjs` dependency
+   with `phantomjs-prebuilt` which installs PhantomJS 2.
  * When '--debug=true' is used as a phantomFlag and
    'DEBUG=phantom-render-stream' is set in the environment,
    STDERR of the Phantom process is now piped to the parent process STDERR
