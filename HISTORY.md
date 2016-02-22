@@ -1,6 +1,6 @@
 
  * When '--debug=true' is used as a phantomFlag and
-   'DEBUG=phantom-render-stream' is set in the environment, 
+   'DEBUG=phantom-render-stream' is set in the environment,
    STDERR of the Phantom process is now piped to the parent process STDERR
    and labeled as `stderr` so that you can tell it apart from `stdout`. (Mark Stosberg)
 
@@ -53,7 +53,7 @@
 1.0.2 / 2014-08-14
 ==================
 
-  * 'retries' option is now documented (Mark Stosberg) 
+  * 'retries' option is now documented (Mark Stosberg)
   * Add "Troubleshooting" and "See Also" sections to README.md (Mark Stosberg)
   * Add HISTORY.md file (Mark Stosberg)
   * default value of 'tmp' is now documented (Mark Stosberg)
@@ -142,7 +142,3 @@
 ===================
 
   * No formal documented history. See Github commits.
-
-
-
-
