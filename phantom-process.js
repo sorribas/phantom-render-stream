@@ -4,7 +4,61 @@
 var webpage = require('webpage');
 var system = require('system');
 
-var page = webpage.create();
+var page = createWebPage();
+
+function log (message) {
+  var json = JSON.stringify({
+    message: message
+  });
+
+  console.log(json);
+}
+
+function createWebPage () {
+  var page = webpage.create();
+
+  page.onConsoleMessage = function (msg, lineNum, sourceId) {
+    log({
+      type: 'consoleMessage',
+      data: {
+        msg: msg,
+        lineNum: lineNum,
+        sourceId: sourceId
+      }
+    });
+  };
+
+  page.onError = function (msg, trace) {
+    log({
+      type: 'error',
+      data: {
+        msg: msg,
+        trace: trace
+      }
+    });
+  };
+
+  page.onResourceError = function (resourceError) {
+    log({
+      type: 'resourceError',
+      data: {
+        resourceError: resourceError
+      }
+    });
+  };
+
+  page.onResourceTimeout = function(request) {
+    log({
+      type: 'resourceTimeout',
+      data: {
+        request: request
+      }
+    });
+  };
+
+  return page;
+}
+
 
 var forcePrintMedia = function() {
   page.evaluate(function() {
@@ -71,7 +125,7 @@ var loop = function() {
     return phantom.exit(1);
   }
 
-  if (!page) page = webpage.create();
+  if (!page) page = createWebPage();
 
   if (line.cookies && line.cookies.length > 0) {
     line.cookies.forEach(function (c) {
