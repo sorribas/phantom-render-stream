@@ -8,6 +8,9 @@
    STDERR of the Phantom process is now piped to the parent process STDERR
    and labeled as `stderr` so that you can tell it apart from `stdout`. (Mark Stosberg)
 
+####Breaking changes
+   There might be some issue with zooming because of phantomjs 2+
+
 1.7.1
 ==================
 
