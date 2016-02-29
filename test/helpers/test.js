@@ -1,7 +1,7 @@
 var tape = require('tape');
 var http = require('http');
 var proc = require('child_process');
-var phantomjsPath = require('phantomjs').path;
+var phantomjsPath = require('phantomjs-prebuilt').path;
 
 var server;
 module.exports = function(msg, fn) {
@@ -10,7 +10,7 @@ module.exports = function(msg, fn) {
 
     proc.exec(phantomjsPath + ' --version', function(err) {
       if (err) {
-        t.fail('phantomjs module is not properly installed. Try re-installing it. Error was: '+err);
+        t.fail('phantomjs-prebuilt module is not properly installed. Try re-installing it. Error was: '+err);
         process.exit(1);
       }
 
