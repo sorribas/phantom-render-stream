@@ -28,6 +28,14 @@ module.exports = function(msg, fn) {
         if (req.url.indexOf('timeout') > -1) {
           return; // do nothing...
         }
+        if (req.url.indexOf('log-console') > -1) {
+          res.end('<html><head><script>console.log("useful log");</script></head><body>hello</body></html>');
+          return;
+        }
+        if (req.url.indexOf('log-error') > -1) {
+          res.end('<html><head><script>a.b=1;</script></head><body>hello</body></html>');
+          return;
+        }
         res.end('hello world\n');
       });
       server.listen(0, function() {
