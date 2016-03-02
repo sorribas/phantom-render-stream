@@ -187,7 +187,7 @@ var pool = function(opts) {
     });
 
     worker.stream.on('data', function(data) {
-      if (!data.log) return dup.push(data);
+      if (data.log) return dup.push(data);
       
       if (!data.success) worker.errors++;
       else worker.errors = 0;
