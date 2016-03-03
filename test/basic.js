@@ -135,12 +135,8 @@ test('emits phantom logs - console', function(host, t) {
   var render = phantom();
   render(host + '/?log-console')
     .on('log', function(log) {
-      t.deepEqual(log, {
-        type: 'consoleMessage',
-        data: {
-          msg: 'useful log'
-        }
-      });
+      t.equal(log.type, 'consoleMessage');
+      t.equal(log.data.msg, 'useful log');
       t.end();
     });
 });
@@ -149,13 +145,9 @@ test('emits phantom logs - js errors', function(host, t) {
   var render = phantom();
   render(host + '/?log-error')
     .on('log', function(log) {
-      t.deepEqual(log, {
-        type: 'error',
-        data: {
-          msg: 'ReferenceError: Can\'t find variable: a',
-          trace: [ { file: host + '/?log-error', function: '', line: 1 } ]
-        }
-      });
+      t.equal(log.type, 'error');
+      t.equal(log.data.msg, 'ReferenceError: Can\'t find variable: a');
+      t.deepEqual(log.data.trace, [ { file: host + '/?log-error', function: '', line: 1 } ]);
       t.end();
     });
 });
