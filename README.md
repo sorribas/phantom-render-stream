@@ -172,7 +172,31 @@ For rendering, PhantomJS requires the `fontconfig` library, which may be missing
 
 ## Troubleshooting
 
-Some additional debugging output may be enabled by running your script with a
+Render stream emits "log" event with useful debug details:
+- JS errors on page
+- console.log's
+- page resource error
+- page resource timeou
+- expectation not met
+
+```javascript
+var render = phantom();
+
+render('http://somewhere.com')
+  .on('log', function(log) {
+    // {
+    //   type: 'error',
+    //   data: {
+    //     msg: 'ReferenceError: Can\'t find variable: a',
+    //     trace: [..]
+    // }
+  })
+  .pipe(res);
+```
+
+These logs are equivalents of phantom webpage hooks: onError, onConsoleMessage, onResourceError, onResourceTimeout.
+
+Finally, Some additional debugging output may be enabled by running your app with a
 `DEBUG` environment variable set as follows:
 
     DEBUG=phantom-render-stream  node ./your-script.js
