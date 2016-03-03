@@ -4,7 +4,62 @@
 var webpage = require('webpage');
 var system = require('system');
 
-var page = webpage.create();
+var page = createWebPage();
+
+function createWebPage (id) {
+  var page = webpage.create();
+  page.id = id;
+
+  page.log = function(message) {
+    var json = JSON.stringify({
+      id: page.id,
+      log: message
+    });
+    console.log(json);
+  }
+
+  page.onConsoleMessage = function (msg, lineNum, sourceId) {
+    page.log({
+      type: 'consoleMessage',
+      data: {
+        msg: msg,
+        lineNum: lineNum,
+        sourceId: sourceId
+      }
+    });
+  };
+
+  page.onError = function (msg, trace) {
+    page.log({
+      type: 'error',
+      data: {
+        msg: msg,
+        trace: trace
+      }
+    });
+  };
+
+  page.onResourceError = function (resourceError) {
+    page.log({
+      type: 'resourceError',
+      data: {
+        resourceError: resourceError
+      }
+    });
+  };
+
+  page.onResourceTimeout = function(request) {
+    page.log({
+      type: 'resourceTimeout',
+      data: {
+        request: request
+      }
+    });
+  };
+
+  return page;
+}
+
 
 var forcePrintMedia = function() {
   page.evaluate(function() {
@@ -63,7 +118,7 @@ var forcePrintMedia = function() {
 var renders = 0, maxRenders = 500;
 var loop = function() {
   var line = system.stdin.readLine();
-  if (!line.trim()) return phantom.exit(0);
+  if (!line.trim()) return phantom.exit(0); 
 
   try {
     line = JSON.parse(line);
@@ -71,7 +126,8 @@ var loop = function() {
     return phantom.exit(1);
   }
 
-  if (!page) page = webpage.create();
+  if (!page) page = createWebPage(line.id);
+  else page.id = line.id;
 
   if (line.cookies && line.cookies.length > 0) {
     line.cookies.forEach(function (c) {
@@ -83,7 +139,10 @@ var loop = function() {
   if (line.injectJs && line.injectJs.length > 0) {
     page.onInitialized = function () {
       line.injectJs.forEach(function (path) {
-        console.log('Injecting script: ', path);
+        page.log({
+          type: 'injectedScript',
+          data: {path: path}
+        });
         page.injectJs(path);
       });
     };
@@ -115,7 +174,8 @@ var loop = function() {
     }
   }
 
-  var onerror = function() {
+  var onerror = function(message) {
+    page.log(message);
     line.success = false;
     console.log(JSON.stringify(line));
     page = null;
@@ -123,7 +183,10 @@ var loop = function() {
   }
 
   page.open(line.url, function(requestStatus) {
-    if (requestStatus !== 'success') return onerror();
+    if (requestStatus !== 'success') return onerror({
+      type: 'pageFetchError',
+      data: {status: requestStatus}
+    });
 
     var render = function() {
       setTimeout(function() {
@@ -132,7 +195,7 @@ var loop = function() {
         page = null;
         line.success = true;
         console.log(JSON.stringify(line));
-        if (maxRenders && renders++ >= maxRenders) phantom.exit(0);
+        if (maxRenders && renders++ >= maxRenders) return phantom.exit(0);
         loop();
       }, 0);
     };
@@ -150,7 +213,10 @@ var loop = function() {
         clearTimeout(timeout);
 
         if (msg === 'webpage-renderable') render();
-        else onerror();
+        else onerror({
+          type: 'expectError',
+          data: {expects: line.expects}
+        });
       };
 
       page.evaluate(function(expects) {

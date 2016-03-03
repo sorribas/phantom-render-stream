@@ -114,9 +114,8 @@ test('expects failure case, with options passed to phantom()', function(host, t)
   });
 });
 
-
 test('expects with window.renderable appearing before timeout should work', function (host,t) {
-  var render = phantom({expects:'lols', timeout:3000});
+  var render = phantom({expects:'lols', timeout:5000});
   render(host +'/?slow-expects').pipe(concat(function(data) {
     t.ok(data);
     t.ok(data.length > 0);
@@ -124,12 +123,31 @@ test('expects with window.renderable appearing before timeout should work', func
   }));
 });
 
-
-
 test('timeout', function(host, t) {
   var render = phantom({timeout: 100});
   render(host + '/?timeout').on('error', function(err) {
     t.ok(err);
     t.end();
   });
+});
+
+test('emits phantom logs - console', function(host, t) {
+  var render = phantom();
+  render(host + '/?log-console')
+    .on('log', function(log) {
+      t.equal(log.type, 'consoleMessage');
+      t.equal(log.data.msg, 'useful log');
+      t.end();
+    });
+});
+
+test('emits phantom logs - js errors', function(host, t) {
+  var render = phantom();
+  render(host + '/?log-error')
+    .on('log', function(log) {
+      t.equal(log.type, 'error');
+      t.equal(log.data.msg, 'ReferenceError: Can\'t find variable: a');
+      t.ok(log.data.trace);
+      t.end();
+    });
 });
