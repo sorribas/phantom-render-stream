@@ -179,7 +179,7 @@ var render = phantom();
 
 render('http://somewhere.com')
   .on('log', function(log) {
-    // {type: 'error', data: {msg: 'ReferenceError: Can\'t find variable: a', trace: [..]}
+    // {type: 'error', data: {msg: 'ReferenceError: Can\'t find variable: a', trace: [..]}}
   })
   .pipe(res);
 ```
