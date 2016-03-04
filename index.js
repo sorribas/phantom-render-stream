@@ -18,7 +18,7 @@ var os = require('os');
 var http = require('http');
 var debug = require('debug')('phantom-render-stream');
 var debugStream = require('debug-stream')(debug);
-var phantomjsPath = require('phantomjs').path;
+var phantomjsPath = require('phantomjs-prebuilt').path;
 
 var noop = function() {};
 
