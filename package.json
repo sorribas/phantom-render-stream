@@ -1,6 +1,6 @@
 {
   "name": "phantom-render-stream",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "description": "Render a webpage and get the image as a stream",
   "repository": "appsumo/phantom-render-stream",
   "dependencies": {
@@ -12,7 +12,7 @@
     "ldjson-stream": "^1.1.0",
     "mkdirp": "^0.5.0",
     "once": "^1.3.0",
-    "phantomjs": "git://github.com/just-boris/phantomjs.git",
+    "phantomjs": "2.1.x",
     "thunky": "^0.1.0",
     "xtend": "^3.0.0",
     "duplexify": "~3.2.0",
