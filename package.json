@@ -1,6 +1,6 @@
 {
   "name": "phantom-render-stream",
-  "version": "1.7.6",
+  "version": "1.7.7",
   "description": "Render a webpage and get the image as a stream",
   "repository": "appsumo/phantom-render-stream",
   "dependencies": {
