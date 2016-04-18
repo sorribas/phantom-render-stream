@@ -1,7 +1,7 @@
 2.1.0
 ==================
+ * Render stream emits "log" event with data from onError, onConsoleMessage, onRequestError and onRequestTimeout webpage hooks.
 
-..
 
 2.0.0
 ==================
