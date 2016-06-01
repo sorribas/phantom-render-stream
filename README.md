@@ -46,6 +46,7 @@ var render = phantom({
   quality     : 100,         // The default image quality. Defaults to 100. Only relevant for jpeg format.
   width       : 1280,        // Changes the width size. Defaults to 1280
   height      : 800,         // Changes the height size. Defaults to 960
+  zoomFactor  : 1.5,         // Changes the scaling factor. Defaults to 1
   paperFormat : 'A4',        // Defaults to A4. Also supported: 'A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid'.
   orientation : 'portrait',  // Defaults to portrait. 'landscape' is also valid
   margin      : '0cm',       // Defaults to 0cm. Supported dimension units are: 'mm', 'cm', 'in', 'px'. No unit means 'px'.

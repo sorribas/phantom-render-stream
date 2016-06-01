@@ -161,6 +161,10 @@ var loop = function() {
       margin: line.margin || '0cm'
     };
 
+  if (line.zoomFactor) page.zoomFactor = line.zoomFactor;
+
+  if (line.dpi) page.settings.dpi = line.dpi;
+
   if (line.userAgent) page.settings.userAgent = line.userAgent;
 
   if (line.headers) page.customHeaders = line.headers;
