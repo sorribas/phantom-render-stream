@@ -163,6 +163,14 @@ Obviously, make sure the path './includes/my-date-polyfill.js' is resolvable fro
 When the page is [initialized](http://phantomjs.org/api/webpage/handler/on-initialized.html), any scripts you listed there will
 be injected before any rendering happens.
 
+## Disable Javascript
+For security reasons it could be necessary to disable javascript:
+
+```javascript
+var phantom = render({
+  javascriptEnabled: false
+});
+```
 
 ## Extra Dependencies
 
