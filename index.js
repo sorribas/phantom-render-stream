@@ -24,7 +24,7 @@ var noop = function() {};
 
 var TMP = path.join(fs.existsSync('/tmp') ? '/tmp' : os.tmpDir(), 'phantom-render-stream');
 
-var serve = function() {
+var serve = function(opts) {
   var cache = LRU(200);
   var server = http.createServer(function(request, response) {
     request.connection.unref();
@@ -45,7 +45,7 @@ var serve = function() {
   });
 
   var listen = thunky(function(cb) {
-    server.listen(0, function() {
+    server.listen(0, opts.listen, function() {
       server.unref();
 
       var port = server.address().port;
@@ -238,13 +238,14 @@ var create = function(opts) {
     retries      : 1,
     tmp          : TMP,
     format       : 'png',
-    quality      : 100
+    quality      : 100,
+    listen       : '0.0.0.0'
   };
 
   opts = xtend(defaultOpts,opts);
 
   var worker = pool(opts);
-  var server = serve();
+  var server = serve(opts);
   var queued = {};
 
   worker.on('data', function(data) {
