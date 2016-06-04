@@ -164,6 +164,17 @@ When the page is [initialized](http://phantomjs.org/api/webpage/handler/on-initi
 be injected before any rendering happens.
 
 
+## Request whitelist
+For security reasons you probably would filter the outgoing requests:
+
+```javascript
+var phantom = render({
+  requestWhitelist: [
+    '^http://localhost/assets/.*'
+  ]
+});
+```
+
 ## Extra Dependencies
 
 For rendering, PhantomJS requires the `fontconfig` library, which may be missing if you're using Ubuntu Server. To install on Ubuntu:

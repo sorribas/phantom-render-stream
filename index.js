@@ -238,7 +238,8 @@ var create = function(opts) {
     retries      : 1,
     tmp          : TMP,
     format       : 'png',
-    quality      : 100
+    quality      : 100,
+    requestWhitelist: false
   };
 
   opts = xtend(defaultOpts,opts);
