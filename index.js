@@ -18,7 +18,7 @@ var os = require('os');
 var http = require('http');
 var debug = require('debug')('phantom-render-stream');
 var debugStream = require('debug-stream')(debug);
-var phantomjsPath = require('phantomjs').path;
+var phantomjsPath = require('phantomjs-prebuilt').path;
 
 var noop = function() {};
 
@@ -187,6 +187,8 @@ var pool = function(opts) {
     });
 
     worker.stream.on('data', function(data) {
+      if (data.log) return dup.push(data);
+      
       if (!data.success) worker.errors++;
       else worker.errors = 0;
 
@@ -249,6 +251,8 @@ var create = function(opts) {
     var proxy = queued[data.id];
     if (!proxy) return;
 
+    if (data.log) return proxy.emit('log', data.log);
+  
     if (!data.success && data.tries < opts.retries) {
       fs.unlink(data.filename, noop);
       data.tries++;
@@ -260,7 +264,9 @@ var create = function(opts) {
     delete queued[data.id];
     if (!data.success) {
       fs.unlink(data.filename, noop);
-      return proxy.destroy(new Error('Render failed ('+data.tries+' tries) Request details: '+JSON.stringify(data)));
+      return proxy.destroy(new Error(
+        'Render failed (' + data.tries + ' tries) ' + 
+        'Request details: ' + JSON.stringify(data))); 
     }
 
     eos(proxy, { writable: false }, function() {

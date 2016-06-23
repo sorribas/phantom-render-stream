@@ -13,8 +13,8 @@ New requests are added to the pool member with the shortest queue length.
 
 ## Synopsis
 
-This module depends on the [phantomjs](https://www.npmjs.org/package/phantomjs) module, which will install
-`phantomjs` for you if you don't already have it.
+This module depends on the [phantomjs-prebuilt](https://www.npmjs.org/package/phantomjs-prebuilt) module, which will install
+[PhantomJS](http://phantomjs.org/) for you if you don't already have it.
 
 ``` js
 var phantom = require('phantom-render-stream');
@@ -57,7 +57,7 @@ var render = phantom({
   maxErrors   : 3,           // Number errors phantom process is allowed to throw before killing it. Defaults to 3.
   expects     : 'something', // No default. Do not render until window.renderable is set to 'something'
   retries     : 1,           // How many times to try a render before giving up. Defaults to 1.
-  phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to phantomjs
+  phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to PhantomJS
   maxRenders  : 500,          // How many renders can a phantom process make before being restarted. Defaults to 500
 
   injectJs    : ['./includes/my-polyfill.js'] // Array of paths to polyfill components or external scripts that will be injected when the page is initialized
@@ -72,7 +72,7 @@ render(myUrl, {format:'jpeg', quality: 100, width: 1280, height: 960}).pipe(...)
 
 ## Supported output formats
 
-We support the output formats that [Phantom's render method](http://phantomjs.org/api/webpage/method/render.html)
+We support the output formats that [PhantomJS's render method](http://phantomjs.org/api/webpage/method/render.html)
 supports. At the time of this writing these are:
 
  * png
@@ -190,7 +190,19 @@ For rendering, PhantomJS requires the `fontconfig` library, which may be missing
 
 ## Troubleshooting
 
-Some additional debugging output may be enabled by running your script with a
+Render stream emits "log" event with useful debug details coming from onError (JS error), onConsoleMessage, onResourceError, onResourceTimeout webpage hooks.
+
+```javascript
+var render = phantom();
+
+render('http://somewhere.com')
+  .on('log', function(log) {
+    // {type: 'error', data: {msg: 'ReferenceError: Can\'t find variable: a', trace: [..]}}
+  })
+  .pipe(res);
+```
+
+Also, some additional debugging output may be enabled by running your app with a
 `DEBUG` environment variable set as follows:
 
     DEBUG=phantom-render-stream  node ./your-script.js
