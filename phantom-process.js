@@ -178,6 +178,8 @@ var loop = function() {
     }
   }
 
+  if(line.javascriptEnabled === false) page.settings.javascriptEnabled = false;
+
   var onerror = function(message) {
     page.log(message);
     line.success = false;
