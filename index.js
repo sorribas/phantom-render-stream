@@ -78,7 +78,7 @@ var serve = function(opts) {
 };
 
 var spawn = function(opts) {
-  var phantomjsArgs = opts.phantomFlags.concat(path.join(__dirname, 'phantom-process.js'));
+  var phantomjsArgs = opts.phantomFlags.concat('phantomScript' in opts ? opts.phantomScript : path.join(__dirname, 'phantom-process.js'));
   var child = proc.spawn(phantomjsPath, phantomjsArgs);
   debug('phantom (%s) spawned', child.pid);
 
