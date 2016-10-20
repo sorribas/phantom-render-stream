@@ -118,7 +118,7 @@ var forcePrintMedia = function() {
 var renders = 0, maxRenders = 500;
 var loop = function() {
   var line = system.stdin.readLine();
-  if (!line.trim()) return phantom.exit(0); 
+  if (!line.trim()) return phantom.exit(0);
 
   try {
     line = JSON.parse(line);
@@ -153,6 +153,17 @@ var loop = function() {
     width: line.width || 1280,
     height: line.height || 960
   };
+
+  page.paperSize = line.paperSize ||
+    {
+      format: line.paperFormat || 'A4',
+      orientation: line.orientation || 'portrait',
+      margin: line.margin || '0cm'
+    };
+
+  if (line.zoomFactor) page.zoomFactor = line.zoomFactor;
+
+  if (line.dpi) page.settings.dpi = line.dpi;
 
   if (line.userAgent) page.settings.userAgent = line.userAgent;
 
