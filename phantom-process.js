@@ -180,6 +180,21 @@ var loop = function() {
 
   if(line.javascriptEnabled === false) page.settings.javascriptEnabled = false;
 
+  if(line.requestWhitelist) {
+    page.onResourceRequested = function(reqData, networkRequest) {
+      if(line.url === reqData.url) return; // allow self-request
+      var abort = true;
+      line.requestWhitelist.forEach(function(rgxp) {
+        var r = new RegExp(rgxp, 'gi');
+        if(r.test(reqData.url)) abort = false;
+      });
+      if(abort) {
+        console.log('Deny network request to', reqData.url);
+        networkRequest.abort();
+      }
+    }
+  }
+
   var onerror = function(message) {
     page.log(message);
     line.success = false;

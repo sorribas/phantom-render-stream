@@ -192,6 +192,17 @@ var phantom = render({
 });
 ```
 
+## Request whitelist
+For security reasons you probably would filter the outgoing requests:
+
+```javascript
+var phantom = render({
+  requestWhitelist: [
+    '^http://localhost/assets/.*'
+  ]
+});
+```
+
 ## Extra Dependencies
 
 For rendering, PhantomJS requires the `fontconfig` library, which may be missing if you're using Ubuntu Server. To install on Ubuntu:

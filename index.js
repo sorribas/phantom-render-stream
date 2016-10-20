@@ -188,7 +188,7 @@ var pool = function(opts) {
 
     worker.stream.on('data', function(data) {
       if (data.log) return dup.push(data);
-      
+
       if (!data.success) worker.errors++;
       else worker.errors = 0;
 
@@ -239,7 +239,8 @@ var create = function(opts) {
     tmp          : TMP,
     format       : 'png',
     quality      : 100,
-    listen       : '0.0.0.0'
+    listen       : '0.0.0.0',
+    requestWhitelist: false
   };
 
   opts = xtend(defaultOpts,opts);
@@ -253,7 +254,7 @@ var create = function(opts) {
     if (!proxy) return;
 
     if (data.log) return proxy.emit('log', data.log);
-  
+
     if (!data.success && data.tries < opts.retries) {
       fs.unlink(data.filename, noop);
       data.tries++;
@@ -266,8 +267,8 @@ var create = function(opts) {
     if (!data.success) {
       fs.unlink(data.filename, noop);
       return proxy.destroy(new Error(
-        'Render failed (' + data.tries + ' tries) ' + 
-        'Request details: ' + JSON.stringify(data))); 
+        'Render failed (' + data.tries + ' tries) ' +
+        'Request details: ' + JSON.stringify(data)));
     }
 
     eos(proxy, { writable: false }, function() {
