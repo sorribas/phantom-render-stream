@@ -5,8 +5,8 @@
   "repository": "e-conomic/phantom-render-stream",
   "dependencies": {
     "after-all": "~1.0.0",
-    "debug": "^1.0.2",
-    "debug-stream": "^2.0.1",
+    "debug": "^2.2.0",
+    "debug-stream": "^3.0.1",
     "fwd-stream": "^1.0.4",
     "hat": "0.0.3",
     "ldjson-stream": "^1.1.0",
