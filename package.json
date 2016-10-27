@@ -4,25 +4,25 @@
   "description": "Render a webpage and get the image as a stream",
   "repository": "sammorrowdrums/phantom-render-stream",
   "dependencies": {
-    "after-all": "~1.0.0",
-    "debug": "^1.0.2",
-    "debug-stream": "^2.0.1",
+    "after-all": "^2.0.2",
+    "concat-stream": "^1.5.2",
+    "debug": "^2.2.0",
+    "debug-stream": "^3.0.1",
+    "duplexify": "^3.5.0",
+    "end-of-stream": "~1.1.0",
     "fwd-stream": "^1.0.4",
     "hat": "0.0.3",
     "ldjson-stream": "^1.1.0",
+    "lru-cache": "^4.0.1",
     "mkdirp": "^0.5.0",
     "once": "^1.3.0",
-    "phantomjs-prebuilt": "2.1.7",
-    "thunky": "^0.1.0",
-    "xtend": "^3.0.0",
-    "duplexify": "~3.2.0",
-    "concat-stream": "~1.4.6",
-    "end-of-stream": "~1.1.0",
-    "lru-cache": "~2.5.0",
-    "server-destroy": "~1.0.0"
+    "phantomjs-prebuilt": "^2.1.13",
+    "server-destroy": "~1.0.0",
+    "thunky": "^1.0.1",
+    "xtend": "^4.0.1"
   },
   "devDependencies": {
-    "tape": "^2.12.3"
+    "tape": "^4.6.2"
   },
   "scripts": {
     "test": "tape test/*.js"
