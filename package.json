@@ -2,7 +2,7 @@
   "name": "phantom-render-stream",
   "version": "2.2.0",
   "description": "Render a webpage and get the image as a stream",
-  "repository": "sammorrowdrums/phantom-render-stream",
+  "repository": "sorribas/phantom-render-stream",
   "dependencies": {
     "after-all": "^2.0.2",
     "concat-stream": "^1.5.2",
