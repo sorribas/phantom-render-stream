@@ -118,7 +118,7 @@ var forcePrintMedia = function() {
 var renders = 0, maxRenders = 500;
 var loop = function() {
   var line = system.stdin.readLine();
-  if (!line.trim()) return phantom.exit(0); 
+  if (!line.trim()) return phantom.exit(0);
 
   try {
     line = JSON.parse(line);
@@ -161,6 +161,10 @@ var loop = function() {
       margin: line.margin || '0cm'
     };
 
+  if (line.zoomFactor) page.zoomFactor = line.zoomFactor;
+
+  if (line.dpi) page.settings.dpi = line.dpi;
+
   if (line.userAgent) page.settings.userAgent = line.userAgent;
 
   if (line.headers) page.customHeaders = line.headers;
@@ -171,6 +175,23 @@ var loop = function() {
       height: line.crop.height || page.viewportSize.height,
       top: line.crop.top || 0,
       left: line.crop.left || 0
+    }
+  }
+
+  if(line.javascriptEnabled === false) page.settings.javascriptEnabled = false;
+
+  if(line.requestWhitelist) {
+    page.onResourceRequested = function(reqData, networkRequest) {
+      if(line.url === reqData.url) return; // allow self-request
+      var abort = true;
+      line.requestWhitelist.forEach(function(rgxp) {
+        var r = new RegExp(rgxp, 'gi');
+        if(r.test(reqData.url)) abort = false;
+      });
+      if(abort) {
+        console.log('Deny network request to', reqData.url);
+        networkRequest.abort();
+      }
     }
   }
 
@@ -187,6 +208,34 @@ var loop = function() {
       type: 'pageFetchError',
       data: {status: requestStatus}
     });
+
+    page.paperSize = line.paperSize || {
+      format: line.paperFormat || 'A4',
+      orientation: line.orientation || 'portrait',
+      margin: line.margin || '0cm',
+      width: '8.5in',
+      height: '11in',
+      header: {},
+      footer: {}
+    }
+
+    /* A PhantomJSPrinting object in the rendered page will determine the header/footer */
+    if (page.evaluate(function(){return typeof PhantomJSPrinting == "object";})) {
+      var paperSize = page.paperSize;
+      paperSize.header.height = page.evaluate(function() {
+        return PhantomJSPrinting.header.height;
+      });
+      paperSize.header.contents = phantom.callback(function(pageNum, numPages) {
+        return page.evaluate(function(pageNum, numPages){return PhantomJSPrinting.header.contents(pageNum, numPages);}, pageNum, numPages);
+      });
+      paperSize.footer.height = page.evaluate(function() {
+        return PhantomJSPrinting.footer.height;
+      });
+      paperSize.footer.contents = phantom.callback(function(pageNum, numPages) {
+        return page.evaluate(function(pageNum, numPages){return PhantomJSPrinting.footer.contents(pageNum, numPages);}, pageNum, numPages);
+      });
+      page.paperSize = paperSize;
+    }
 
     var render = function() {
       setTimeout(function() {

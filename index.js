@@ -24,7 +24,7 @@ var noop = function() {};
 
 var TMP = path.join(fs.existsSync('/tmp') ? '/tmp' : os.tmpDir(), 'phantom-render-stream');
 
-var serve = function() {
+var serve = function(opts) {
   var cache = LRU(200);
   var server = http.createServer(function(request, response) {
     request.connection.unref();
@@ -45,7 +45,7 @@ var serve = function() {
   });
 
   var listen = thunky(function(cb) {
-    server.listen(0, function() {
+    server.listen(0, opts.listen, function() {
       server.unref();
 
       var port = server.address().port;
@@ -78,7 +78,7 @@ var serve = function() {
 };
 
 var spawn = function(opts) {
-  var phantomjsArgs = opts.phantomFlags.concat(path.join(__dirname, 'phantom-process.js'));
+  var phantomjsArgs = opts.phantomFlags.concat('phantomScript' in opts ? opts.phantomScript : path.join(__dirname, 'phantom-process.js'));
   var child = proc.spawn(phantomjsPath, phantomjsArgs);
   debug('phantom (%s) spawned', child.pid);
 
@@ -188,7 +188,7 @@ var pool = function(opts) {
 
     worker.stream.on('data', function(data) {
       if (data.log) return dup.push(data);
-      
+
       if (!data.success) worker.errors++;
       else worker.errors = 0;
 
@@ -238,13 +238,15 @@ var create = function(opts) {
     retries      : 1,
     tmp          : TMP,
     format       : 'png',
-    quality      : 100
+    quality      : 100,
+    listen       : '0.0.0.0',
+    requestWhitelist: false
   };
 
   opts = xtend(defaultOpts,opts);
 
   var worker = pool(opts);
-  var server = serve();
+  var server = serve(opts);
   var queued = {};
 
   worker.on('data', function(data) {
@@ -252,7 +254,7 @@ var create = function(opts) {
     if (!proxy) return;
 
     if (data.log) return proxy.emit('log', data.log);
-  
+
     if (!data.success && data.tries < opts.retries) {
       fs.unlink(data.filename, noop);
       data.tries++;
@@ -265,8 +267,8 @@ var create = function(opts) {
     if (!data.success) {
       fs.unlink(data.filename, noop);
       return proxy.destroy(new Error(
-        'Render failed (' + data.tries + ' tries) ' + 
-        'Request details: ' + JSON.stringify(data))); 
+        'Render failed (' + data.tries + ' tries) ' +
+        'Request details: ' + JSON.stringify(data)));
     }
 
     eos(proxy, { writable: false }, function() {
@@ -290,14 +292,11 @@ var create = function(opts) {
     var proxy = queued[id] = duplexify();
 
     var initialize = function (url) {
+      sopts = xtend(opts, ropts)
       ropts = xtend({
-        url        : url,
-        quality:opts.quality,
-        format     : opts.format,
-        printMedia : opts.printMedia,
-        expects    : opts.expects,
-        timeout    : opts.timeout
-      }, ropts);
+        url        : url
+      }, sopts);
+
       ropts.maxRenders = opts.maxRenders;
       ropts.filename = _getTmpFile(opts.tmp,ropts.format);
       ropts.id = id;

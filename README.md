@@ -46,6 +46,7 @@ var render = phantom({
   quality     : 100,         // The default image quality. Defaults to 100. Only relevant for jpeg format.
   width       : 1280,        // Changes the width size. Defaults to 1280
   height      : 800,         // Changes the height size. Defaults to 960
+  zoomFactor  : 1.5,         // Changes the scaling factor. Defaults to 1
   paperFormat : 'A4',        // Defaults to A4. Also supported: 'A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid'.
   orientation : 'portrait',  // Defaults to portrait. 'landscape' is also valid
   margin      : '0cm',       // Defaults to 0cm. Supported dimension units are: 'mm', 'cm', 'in', 'px'. No unit means 'px'.
@@ -58,7 +59,8 @@ var render = phantom({
   expects     : 'something', // No default. Do not render until window.renderable is set to 'something'
   retries     : 1,           // How many times to try a render before giving up. Defaults to 1.
   phantomFlags: ['--ignore-ssl-errors=true'] // Defaults to []. Command line flags passed to PhantomJS
-  maxRenders  : 500,          // How many renders can a phantom process make before being restarted. Defaults to 500
+  maxRenders  : 500,         // How many renders can a phantom process make before being restarted. Defaults to 500
+  listener    : '0.0.0.0',   // Specify the interface to bind (ie 127.0.0.1)
 
   injectJs    : ['./includes/my-polyfill.js'] // Array of paths to polyfill components or external scripts that will be injected when the page is initialized
 });
@@ -163,6 +165,43 @@ Obviously, make sure the path './includes/my-date-polyfill.js' is resolvable fro
 When the page is [initialized](http://phantomjs.org/api/webpage/handler/on-initialized.html), any scripts you listed there will
 be injected before any rendering happens.
 
+## Header and footer (PDF Only)
+For PDF Files only - Header and Footer can be added by adding a global ``PhantomJSPrinting`` object to the html you are rendering.
+Example:
+
+```html
+<script type="text/javascript">
+  var PhantomJSPrinting = {
+    header: {
+      height: "1cm",
+      contents: function(pageNum, numPages) { return pageNum + "/" + numPages; }
+    },
+    footer: {
+      height: "1cm",
+      contents: function(pageNum, numPages) { return pageNum + "/" + numPages; }
+    }
+  };
+</script>
+
+## Disable Javascript
+For security reasons it could be necessary to disable javascript:
+
+```javascript
+var phantom = render({
+  javascriptEnabled: false
+});
+```
+
+## Request whitelist
+For security reasons you probably would filter the outgoing requests:
+
+```javascript
+var phantom = render({
+  requestWhitelist: [
+    '^http://localhost/assets/.*'
+  ]
+});
+```
 
 ## Extra Dependencies
 
