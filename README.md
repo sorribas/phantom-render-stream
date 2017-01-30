@@ -237,6 +237,7 @@ adding `--ignore-ssl-errors=true` to phantomFlags may help. You also try adding
 ## See Also
 
  * [wkhtmltopdf](https://www.npmjs.org/package/wkhtmltopdf) is a Node module that uses [wkhtmltopdf](http://wkhtmltopdf.org/) to convert HTML to PDF. It is similar in that it uses Webkit and produces output as a stream, and different in that it doesn't use PhantomJS. Also, `wkhtmotopdf` only supports PDF output.
+ * [nightmare](https://www.npmjs.com/package/nightmare) uses Electron which is similar to PhantomJS but more modern and may render faster. There are different output options to produce PNGs or PDFs. There's [sample code](https://github.com/sorribas/phantom-render-stream/issues/80#issuecomment-270946569) for generating a PDF that's returned as a stream.
 
 ## License
 
