@@ -89,6 +89,12 @@ var spawn = function(opts) {
   child.stderr.pipe(debugStream('phantom (%s) stderr', child.pid)).resume();
   input.pipe(debugStream('phantom (%s) stdin', child.pid)).pipe(child.stdin);
 
+  // Phantom may print to STDERR if the --debug flag is used.
+  // Pass through Phantom's STDERR to our own, while adding a prefix so we can tell them apart.
+  child.stderr.on('data', function (data) {
+    console.error("[phantom stderr] "+data);
+  });
+
   var onerror = once(function() {
     child.kill();
   });
